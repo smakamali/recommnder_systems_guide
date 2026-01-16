@@ -411,23 +411,23 @@ Combines GMF and MLP to capture both linear and non-linear patterns:
 
 ```mermaid
 graph TB
-    User[User ID] --> GMF_Embed[GMF User Embedding]
-    User --> MLP_Embed[MLP User Embedding]
-    Item[Item ID] --> GMF_ItemEmbed[GMF Item Embedding]
-    Item --> MLP_ItemEmbed[MLP Item Embedding]
+    User[User ID] --> GMFEmbed[GMF User Embedding]
+    User --> MLPEmbed[MLP User Embedding]
+    Item[Item ID] --> GMFItemEmbed[GMF Item Embedding]
+    Item --> MLPItemEmbed[MLP Item Embedding]
     
-    GMF_Embed --> GMF_Layer[Element-wise Product]
-    GMF_ItemEmbed --> GMF_Layer
+    GMFEmbed --> GMFLayer[Element-wise Product]
+    GMFItemEmbed --> GMFLayer
     
-    MLP_Embed --> Concat[Concatenation]
-    MLP_ItemEmbed --> Concat
+    MLPEmbed --> Concat[Concatenation]
+    MLPItemEmbed --> Concat
     Concat --> MLP1[MLP Layer 1]
     MLP1 --> MLP2[MLP Layer 2]
     MLP2 --> MLP3[MLP Layer 3]
     
-    GMF_Layer --> Final[Concatenation]
-    MLP3 --> Final
-    Final --> Output[Prediction]
+    GMFLayer --> FinalLayer[Concatenation]
+    MLP3 --> FinalLayer
+    FinalLayer --> Output[Prediction]
 ```
 
 **Training**:
