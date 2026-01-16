@@ -78,17 +78,26 @@ Recommender systems can be formulated in several ways depending on the type of f
 #### Task Types
 
 **Rating Prediction**: Predict the rating a user would give to an item
-$$\hat{r}_{ui} = f(u, i, \text{context})$$
 
-where $\hat{r}_{ui}$ is the predicted rating for user $u$ on item $i$.
+```math
+\hat{r} _{ui} = f(u, i, \text{context})
+```
+
+where $\hat{r} _{ui}$ is the predicted rating for user $u$ on item $i$.
 
 **Ranking (Top-N Recommendation)**: Rank items by predicted relevance
-$$\text{rank}(i | u) = f(u, i)$$
+
+```math
+\text{rank}(i | u) = f(u, i)
+```
 
 The goal is to produce an ordered list of items most relevant to the user.
 
 **Sequential Prediction**: Predict the next item(s) given user history
-$$p(i_{t+1} | i_1, i_2, ..., i_t, u)$$
+
+```math
+p(i _{t+1} | i_1, i_2, ..., i_t, u)
+```
 
 This formulation considers temporal dynamics and session-based patterns.
 
@@ -99,32 +108,56 @@ Choosing the right metrics is crucial for assessing recommender system performan
 #### Rating Prediction Metrics
 
 **Root Mean Square Error (RMSE)**:
-$$\text{RMSE} = \sqrt{\frac{1}{N}\sum_{(u,i) \in \text{Test}}(r_{ui} - \hat{r}_{ui})^2}$$
+
+```math
+\text{RMSE} = \sqrt{\frac{1}{N}\sum_{(u,i) \in \text{Test}}(r _{ui} - \hat{r} _{ui})^2}
+```
 
 **Mean Absolute Error (MAE)**:
-$$\text{MAE} = \frac{1}{N}\sum_{(u,i) \in \text{Test}}|r_{ui} - \hat{r}_{ui}|$$
+
+```math
+\text{MAE} = \frac{1}{N}\sum_{(u,i) \in \text{Test}}|r _{ui} - \hat{r} _{ui}|
+```
 
 Lower values indicate better performance. MAE is more robust to outliers.
 
 #### Ranking Metrics
 
 **Precision@K**: Fraction of recommended items that are relevant
-$$\text{Precision@K} = \frac{|\text{Relevant Items} \cap \text{Top-K Recommendations}|}{K}$$
+
+```math
+\text{Precision@K} = \frac{|\text{Relevant Items} \cap \text{Top-K Recommendations}|}{K}
+```
 
 **Recall@K**: Fraction of relevant items that are recommended
-$$\text{Recall@K} = \frac{|\text{Relevant Items} \cap \text{Top-K Recommendations}|}{|\text{Relevant Items}|}$$
+
+```math
+\text{Recall@K} = \frac{|\text{Relevant Items} \cap \text{Top-K Recommendations}|}{|\text{Relevant Items}|}
+```
 
 **Normalized Discounted Cumulative Gain (NDCG@K)**: Considers ranking position
-$$\text{DCG@K} = \sum_{i=1}^{K}\frac{rel_i}{\log_2(i+1)}$$
-$$\text{NDCG@K} = \frac{\text{DCG@K}}{\text{IDCG@K}}$$
+
+```math
+\text{DCG@K} = \sum_{i=1}^{K}\frac{rel_i}{\log_2(i+1)}
+```
+
+```math
+\text{NDCG@K} = \frac{\text{DCG@K}}{\text{IDCG@K}}
+```
 
 where $rel_i$ is the relevance of item at position $i$, and IDCG is the ideal DCG.
 
 **Mean Reciprocal Rank (MRR)**: Average of reciprocal ranks of the first relevant item
-$$\text{MRR} = \frac{1}{|U|}\sum_{u=1}^{|U|}\frac{1}{\text{rank}_u}$$
+
+```math
+\text{MRR} = \frac{1}{|U|}\sum_{u=1}^{|U|}\frac{1}{\text{rank}_u}
+```
 
 **Hit Rate@K**: Percentage of users with at least one relevant item in top-K
-$$\text{Hit Rate@K} = \frac{|\{u : |\text{Relevant}_u \cap \text{Top-K}_u| > 0\}|}{|U|}$$
+
+```math
+\text{Hit Rate@K} = \frac{|\{u : |\text{Relevant}_u \cap \text{Top-K}_u| > 0\}|}{|U|}
+```
 
 ### Evolution Timeline
 
@@ -187,15 +220,24 @@ Recommends items liked by similar users.
 **Similarity Metrics**:
 
 **Cosine Similarity**:
-$$\text{sim}(u, v) = \frac{\sum_{i \in I_{uv}} r_{ui} \cdot r_{vi}}{\sqrt{\sum_{i \in I_{uv}} r_{ui}^2} \cdot \sqrt{\sum_{i \in I_{uv}} r_{vi}^2}}$$
+
+```math
+\text{sim}(u, v) = \frac{\sum_{i \in I _{uv}} r _{ui} \cdot r _{vi}}{\sqrt{\sum_{i \in I _{uv}} r _{ui}^2} \cdot \sqrt{\sum_{i \in I _{uv}} r _{vi}^2}}
+```
 
 **Pearson Correlation**:
-$$\text{sim}(u, v) = \frac{\sum_{i \in I_{uv}} (r_{ui} - \bar{r}_{u}) \cdot (r_{vi} - \bar{r}_{v})}{\sqrt{\sum_{i \in I_{uv}} (r_{ui} - \bar{r}_{u})^2} \cdot \sqrt{\sum_{i \in I_{uv}} (r_{vi} - \bar{r}_{v})^2}}$$
+
+```math
+\text{sim}(u, v) = \frac{\sum_{i \in I_{uv}} (r_{ui} - \bar{r} _{u}) \cdot (r_{vi} - \bar{r} _{v})}{\sqrt{\sum_{i \in I_{uv}} (r_{ui} - \bar{r} _{u})^2} \cdot \sqrt{\sum_{i \in I_{uv}} (r_{vi} - \bar{r} _{v})^2}}
+```
 
 **Prediction Formula**:
-$$\hat{r}_{ui} = \bar{r}_{u} + \frac{\sum_{v \in N(u)} \text{sim}(u,v) \cdot (r_{vi} - \bar{r}_{v})}{\sum_{v \in N(u)} |\text{sim}(u,v)|}$$
 
-where $N(u)$ is the neighborhood of similar users, and $\bar{r}_{u}$ is the average rating of user $u$.
+```math
+\hat{r} _{ui} = \bar{r} _{u} + \frac{\sum_{v \in N(u)} \text{sim}(u,v) \cdot (r_{vi} - \bar{r} _{v})}{\sum_{v \in N(u)} |\text{sim}(u,v)|}
+```
+
+where $N(u)$ is the neighborhood of similar users, and $\bar{r} _{u}$ is the average rating of user $u$.
 
 #### Item-Based Collaborative Filtering
 
@@ -208,7 +250,10 @@ Recommends items similar to those the user has liked. Generally more stable than
 - More accurate in sparse datasets
 
 **Prediction Formula**:
-$$\hat{r}_{ui} = \frac{\sum_{j \in N(i)} \text{sim}(i,j) \cdot r_{uj}}{\sum_{j \in N(i)} |\text{sim}(i,j)|}$$
+
+```math
+\hat{r} _{ui} = \frac{\sum_{j \in N(i)} \text{sim}(i,j) \cdot r _{uj}}{\sum_{j \in N(i)} |\text{sim}(i,j)|}
+```
 
 #### User-Based vs Item-Based CF
 
@@ -237,7 +282,10 @@ Content-based methods recommend items similar to those a user has liked, based o
 #### Feature Extraction
 
 **Text Features (TF-IDF)**:
-$$\text{TF-IDF}(t,d) = \text{TF}(t,d) \times \log\frac{N}{\text{DF}(t)}$$
+
+```math
+\text{TF-IDF}(t,d) = \text{TF}(t,d) \times \log\frac{N}{\text{DF}(t)}
+```
 
 where TF is term frequency, DF is document frequency, and $N$ is total documents.
 
@@ -249,15 +297,24 @@ where TF is term frequency, DF is document frequency, and $N$ is total documents
 #### User Profile Construction
 
 Build a profile representing user preferences:
-$$\text{profile}(u) = \frac{1}{|I_u|}\sum_{i \in I_u} \text{features}(i)$$
+
+```math
+\text{profile}(u) = \frac{1}{|I_u|}\sum_{i \in I_u} \text{features}(i)
+```
 
 or weighted by ratings:
-$$\text{profile}(u) = \frac{\sum_{i \in I_u} r_{ui} \cdot \text{features}(i)}{\sum_{i \in I_u} r_{ui}}$$
+
+```math
+\text{profile}(u) = \frac{\sum_{i \in I_u} r _{ui} \cdot \text{features}(i)}{\sum_{i \in I_u} r _{ui}}
+```
 
 #### Recommendation Generation
 
 Compute similarity between user profile and candidate items:
-$$\text{score}(u, i) = \text{sim}(\text{profile}(u), \text{features}(i))$$
+
+```math
+\text{score}(u, i) = \text{sim}(\text{profile}(u), \text{features}(i))
+```
 
 **Strengths**:
 - No cold start for items (can recommend new items immediately)
@@ -277,7 +334,10 @@ Matrix factorization decomposes the user-item interaction matrix into lower-dime
 #### Core Idea
 
 Approximate the rating matrix $R \in \mathbb{R}^{m \times n}$ as:
-$$R \approx P^T Q$$
+
+```math
+R \approx P^T Q
+```
 
 where $P \in \mathbb{R}^{k \times m}$ represents user factors and $Q \in \mathbb{R}^{k \times n}$ represents item factors, with $k \ll \min(m,n)$.
 
@@ -286,7 +346,10 @@ Prediction: $\hat{r}_{ui} = p_u^T q_i$
 #### Singular Value Decomposition (SVD)
 
 Classical approach using matrix decomposition:
-$$R = U\Sigma V^T$$
+
+```math
+R = U\Sigma V^T
+```
 
 **Challenge**: SVD requires a complete matrix, but recommender data is sparse.
 
@@ -295,7 +358,10 @@ $$R = U\Sigma V^T$$
 #### Optimization-Based Approach
 
 **Loss Function**:
-$$\mathcal{L} = \sum_{(u,i) \in \mathcal{O}} (r_{ui} - p_u^T q_i)^2 + \lambda(||p_u||^2 + ||q_i||^2)$$
+
+```math
+\mathcal{L} = \sum_{(u,i) \in \mathcal{O}} (r _{ui} - p_u^T q_i)^2 + \lambda(||p_u||^2 + ||q_i||^2)
+```
 
 where $\mathcal{O}$ is the set of observed ratings, and $\lambda$ is the regularization parameter.
 
@@ -335,7 +401,10 @@ def als_matrix_factorization(R, k, lambda_reg, iterations):
 #### Probabilistic Matrix Factorization (PMF)
 
 Bayesian approach with Gaussian priors:
-$$p(R|P,Q,\sigma^2) = \prod_{(u,i) \in \mathcal{O}} \mathcal{N}(r_{ui} | p_u^T q_i, \sigma^2)$$
+
+```math
+p(R|P,Q,\sigma^2) = \prod_{(u,i) \in \mathcal{O}} \mathcal{N}(r _{ui} | p_u^T q_i, \sigma^2)
+```
 
 **Advantages of Matrix Factorization**:
 - Handles sparsity well
@@ -355,7 +424,10 @@ Combine multiple recommendation approaches to leverage their complementary stren
 #### Hybridization Strategies
 
 **Weighted Hybrid**:
-$$\text{score}(u,i) = \alpha \cdot \text{score}_{\mathrm{CF}}(u,i) + (1-\alpha) \cdot \text{score}_{\mathrm{CB}}(u,i)$$
+
+```math
+\text{score}(u,i) = \alpha \cdot \text{score} _{\mathrm{CF}}(u,i) + (1-\alpha) \cdot \text{score} _{\mathrm{CB}}(u,i)
+```
 
 **Switching Hybrid**:
 Use different methods based on context (e.g., content-based for new items, CF for existing items).
@@ -392,18 +464,36 @@ Neural Collaborative Filtering (NCF) replaces the dot product in matrix factoriz
 #### Generalized Matrix Factorization (GMF)
 
 Neural interpretation of matrix factorization:
-$$\hat{r}_{ui} = a_{\mathrm{out}}(h^{T}(p_{u} \odot q_{i}))$$
+
+```math
+\hat{r} _{ui} = a _{\mathrm{out}}(h^{T}(p _{u} \odot q _{i}))
+```
 
 where $\odot$ is element-wise product, $h$ is the edge weights, and $a_{out}$ is the output activation.
 
 #### Multi-Layer Perceptron (MLP)
 
 Learn interactions through hidden layers:
-$$z_1 = \phi_1(p_u, q_i) = [p_u, q_i]$$
-$$z_2 = a_2(W_2^T z_1 + b_2)$$
-$$\vdots$$
-$$z_L = a_L(W_L^T z_{L-1} + b_L)$$
-$$\hat{r}_{ui} = \sigma(h^T z_L)$$
+
+```math
+z_1 = \phi_1(p_u, q_i) = [p_u, q_i]
+```
+
+```math
+z_2 = a_2(W_2^T z_1 + b_2)
+```
+
+```math
+\vdots
+```
+
+```math
+z_L = a_L(W_L^T z _{L-1} + b_L)
+```
+
+```math
+\hat{r} _{ui} = \sigma(h^T z_L)
+```
 
 #### NeuMF: Fusion Model
 
@@ -433,7 +523,9 @@ graph TB
 **Training**:
 - Loss function: Binary cross-entropy for implicit feedback
 
-$$\mathcal{L} = -\sum_{(u,i,y) \in \mathcal{T}} \left[ y \log \hat{y}_{ui} + (1-y)\log(1-\hat{y}_{ui}) \right]$$
+```math
+\mathcal{L} = -\sum_{(u,i,y) \in \mathcal{T}} \left[ y \log \hat{y} _{ui} + (1-y)\log(1-\hat{y} _{ui}) \right]
+```
 
 **Key Insights**:
 - Separate embeddings for GMF and MLP paths improve performance
@@ -449,19 +541,28 @@ Autoencoders compress input into latent representations, useful for collaborativ
 Neural autoencoder-based CF with two variants:
 
 **Item-Based AutoRec (I-AutoRec)**:
-$$h(r^{(i)}; \theta) = f(W \cdot g(V r^{(i)} + \mu) + b)$$
+
+```math
+h(r^{(i)}; \theta) = f(W \cdot g(V r^{(i)} + \mu) + b)
+```
 
 where $r^{(i)}$ is the rating vector for item $i$, and $f, g$ are activation functions.
 
 **Objective**:
-$$\min_{\theta} \sum_{i=1}^n ||r^{(i)} - h(r^{(i)}; \theta)||_2^2 + \frac{\lambda}{2}(||W||_F^2 + ||V||_F^2)$$
+
+```math
+\min_{\theta} \sum_{i=1}^n ||r^{(i)} - h(r^{(i)}; \theta)|| _2^2 + \frac{\lambda}{2}(||W|| _F^2 + ||V|| _F^2)
+```
 
 **User-Based AutoRec (U-AutoRec)**: Similar, but encodes user rating vectors.
 
 #### Denoising Autoencoders
 
 Add noise to input and train to reconstruct original:
-$$\tilde{r} = r + \epsilon, \quad \epsilon \sim \mathcal{N}(0, \sigma^2)$$
+
+```math
+\tilde{r} = r + \epsilon, \quad \epsilon \sim \mathcal{N}(0, \sigma^2)
+```
 
 **Benefits**:
 - More robust representations
@@ -477,7 +578,10 @@ Probabilistic autoencoders with latent variable modeling:
 **Decoder**: $p_\theta(r_u|z) = \text{Multinomial}(r_u; \pi_\theta(z))$
 
 **ELBO Loss**:
-$$\mathcal{L} = -\mathbb{E}_{q_{\phi}(z|r_{u})}[\log p_{\theta}(r_{u}|z)] + \text{KL}(q_{\phi}(z|r_{u}) \| p(z))$$
+
+```math
+\mathcal{L} = -\mathbb{E} _{q _{\phi}(z|r _{u})}[\log p _{\theta}(r _{u}|z)] + \text{KL}(q _{\phi}(z|r _{u}) \| p(z))
+```
 
 **Mult-VAE**: Uses multinomial likelihood for implicit feedback, achieving state-of-the-art results on many benchmarks.
 
@@ -500,8 +604,14 @@ graph LR
 ```
 
 **Model**:
-$$h_t = \text{GRU}(x_t, h_{t-1})$$
-$$\hat{y}_t = \text{softmax}(W h_t + b)$$
+
+```math
+h_t = \text{GRU}(x_t, h _{t-1})
+```
+
+```math
+\hat{y}_t = \text{softmax}(W h_t + b)
+```
 
 where $x_t$ is the embedding of item at step $t$, and $\hat{y}_t$ is the prediction distribution.
 
@@ -514,15 +624,24 @@ where $x_t$ is the embedding of item at step $t$, and $\hat{y}_t$ is the predict
 #### Ranking Loss Functions
 
 **Bayesian Personalized Ranking (BPR)**:
-$$\mathcal{L}_{\mathrm{BPR}} = -\sum_{(i,j) \in D_{s}} \log \sigma(\hat{r}_{si} - \hat{r}_{sj})$$
+
+```math
+\mathcal{L} _{\mathrm{BPR}} = -\sum_{(i,j) \in D _{s}} \log \sigma(\hat{r} _{si} - \hat{r} _{sj})
+```
 
 where item $i$ is observed in session $s$, and $j$ is a negative sample.
 
 **TOP1 Loss** (relative ranking):
-$$\mathcal{L}_{\mathrm{TOP1}} = \sum_{j \in S} \left[ \sigma(\hat{r}_{sj} - \hat{r}_{si}) + \sigma(\hat{r}_{sj}^{2}) \right]$$
+
+```math
+\mathcal{L} _{\mathrm{TOP1}} = \sum_{j \in S} \left[ \sigma(\hat{r} _{sj} - \hat{r} _{si}) + \sigma(\hat{r} _{sj}^{2}) \right]
+```
 
 **TOP1-max** (simplified):
-$$\mathcal{L}_{\mathrm{TOP1\text{-}max}} = \sigma\left(\max_{j \in S}(\hat{r}_{sj}) - \hat{r}_{si}\right)$$
+
+```math
+\mathcal{L} _{\mathrm{TOP1\text{-}max}} = \sigma\left(\max_{j \in S}(\hat{r} _{sj}) - \hat{r} _{si}\right)
+```
 
 #### Extensions
 
@@ -563,13 +682,22 @@ Transformers brought self-attention mechanisms to sequential recommendations, en
 Self-attention computes attention weights for all positions simultaneously:
 
 **Query, Key, Value**:
-$$Q = XW_Q, \quad K = XW_K, \quad V = XW_V$$
+
+```math
+Q = XW_Q, \quad K = XW_K, \quad V = XW_V
+```
 
 **Scaled Dot-Product Attention**:
-$$\text{Attention}(Q,K,V) = \text{softmax}\left(\frac{QK^T}{\sqrt{d_k}}\right)V$$
+
+```math
+\text{Attention}(Q,K,V) = \text{softmax}\left(\frac{QK^T}{\sqrt{d_k}}\right)V
+```
 
 **Multi-Head Attention** allows learning different aspects:
-$$\text{MultiHead}(Q,K,V) = \text{Concat}(\text{head}_1, ..., \text{head}_h)W_O$$
+
+```math
+\text{MultiHead}(Q,K,V) = \text{Concat}(\text{head}_1, ..., \text{head}_h)W_O
+```
 
 #### BERT4Rec: Bidirectional Encoder for Sequential Recommendations
 
@@ -601,7 +729,10 @@ def bert4rec(user_sequence, mask_prob=0.15):
 ```
 
 **Training Objective (Cloze Task)**:
-$$\mathcal{L} = -\sum_{m \in \mathcal{M}} \log P(v_m = v_m^* | S_\mathcal{M})$$
+
+```math
+\mathcal{L} = -\sum_{m \in \mathcal{M}} \log P(v_m = v_m^* | S_\mathcal{M})
+```
 
 where $\mathcal{M}$ is the set of masked positions, $v_m^*$ is the true item, and $S_\mathcal{M}$ is the masked sequence.
 
@@ -621,18 +752,27 @@ where $\mathcal{M}$ is the set of masked positions, $v_m^*$ is the true item, an
 Unidirectional self-attention for left-to-right modeling.
 
 **Model Architecture**:
-$$\text{SASRec}(S) = F_1(F_2(...F_L(E)))$$
+
+```math
+\text{SASRec}(S) = F_1(F_2(...F_L(E)))
+```
 
 where $E$ is the embedding matrix, and $F_l$ is the $l$-th self-attention block.
 
 **Causal Self-Attention**:
 Uses masking to prevent attending to future items:
-$$\text{Attention}(Q,K,V) = \text{softmax}\left(\frac{QK^T + M}{\sqrt{d}}\right)V$$
 
-where $M_{ij} = -\infty$ if $i < j$ (future positions).
+```math
+\text{Attention}(Q,K,V) = \text{softmax}\left(\frac{QK^T + M}{\sqrt{d}}\right)V
+```
+
+where $M _{ij} = -\infty$ if $i < j$ (future positions).
 
 **Prediction**:
-$$p(i | S_u) = \frac{\exp(r_i^T F(S_u))}{\sum_{i' \in \mathcal{I}} \exp(r_{i'}^T F(S_u))}$$
+
+```math
+p(i | S_u) = \frac{\exp(r_i^T F(S_u))}{\sum_{i' \in \mathcal{I}} \exp(r _{i'}^T F(S_u))}
+```
 
 **Comparison: BERT4Rec vs SASRec**:
 
@@ -689,27 +829,44 @@ Removes unnecessary complexity from GCNs for better recommendation performance.
 **Key Insight**: Feature transformations and non-linear activations hurt performance in CF.
 
 **Layer-wise Propagation**:
-$$e_{u}^{(k+1)} = \sum_{i \in \mathcal{N}_{u}} \frac{1}{\sqrt{|\mathcal{N}_{u}||\mathcal{N}_{i}|}} e_{i}^{(k)}$$
 
-$$e_{i}^{(k+1)} = \sum_{u \in \mathcal{N}_{i}} \frac{1}{\sqrt{|\mathcal{N}_{i}||\mathcal{N}_{u}|}} e_{u}^{(k)}$$
+```math
+e _{u}^{(k+1)} = \sum_{i \in \mathcal{N} _{u}} \frac{1}{\sqrt{|\mathcal{N} _{u}||\mathcal{N} _{i}|}} e _{i}^{(k)}
+```
 
-where $\mathcal{N}_{u}$ is the set of items interacted by user $u$.
+```math
+e _{i}^{(k+1)} = \sum_{u \in \mathcal{N} _{i}} \frac{1}{\sqrt{|\mathcal{N} _{i}||\mathcal{N} _{u}|}} e _{u}^{(k)}
+```
+
+where $\mathcal{N} _{u}$ is the set of items interacted by user $u$.
 
 **Layer Combination**:
-$$e_u = \sum_{k=0}^K \alpha_k e_u^{(k)}, \quad e_i = \sum_{k=0}^K \alpha_k e_i^{(k)}$$
+
+```math
+e_u = \sum_{k=0}^K \alpha_k e_u^{(k)}, \quad e_i = \sum_{k=0}^K \alpha_k e_i^{(k)}
+```
 
 Typically $\alpha_k = \frac{1}{K+1}$ (uniform weighting).
 
 **Prediction**:
-$$\hat{y}_{ui} = e_u^T e_i$$
+
+```math
+\hat{y} _{ui} = e_u^T e_i
+```
 
 **Matrix Form** (efficient computation):
-$$E^{(k+1)} = (D^{-1/2}AD^{-1/2})E^{(k)}$$
+
+```math
+E^{(k+1)} = (D^{-1/2}AD^{-1/2})E^{(k)}
+```
 
 where $A$ is the adjacency matrix and $D$ is the degree matrix.
 
 **Loss Function** (BPR):
-$$\mathcal{L} = -\sum_{(u,i,j) \in \mathcal{O}} \ln \sigma(\hat{y}_{ui} - \hat{y}_{uj}) + \lambda\|E^{(0)}\|^{2}$$
+
+```math
+\mathcal{L} = -\sum_{(u,i,j) \in \mathcal{O}} \ln \sigma(\hat{y} _{ui} - \hat{y} _{uj}) + \lambda\|E^{(0)}\|^{2}
+```
 
 **Why It Works**:
 - Symmetric normalization prevents scale issues
@@ -727,7 +884,10 @@ Industrial-scale GNN recommendation system.
 **1. Node-wise Sampling**:
 - Random walk to sample neighborhood
 - Importance pooling instead of mean pooling
-$$z_v = \sigma(W \cdot \text{CONCAT}(z_v^{(k-1)}, \text{POOL}(\{z_u^{(k-1)}, \forall u \in \mathcal{N}(v)\})))$$
+
+```math
+z_v = \sigma(W \cdot \text{CONCAT}(z_v^{(k-1)}, \text{POOL}(\{z_u^{(k-1)}, \forall u \in \mathcal{N}(v)\})))
+```
 
 **2. Efficient Training**:
 - Producer-consumer architecture
@@ -748,15 +908,24 @@ $$z_v = \sigma(W \cdot \text{CONCAT}(z_v^{(k-1)}, \text{POOL}(\{z_u^{(k-1)}, \fo
 Explicitly models high-order connectivity through embedding propagation.
 
 **Message Construction**:
-$$m_{u \leftarrow i} = \frac{1}{\sqrt{|\mathcal{N}_u||\mathcal{N}_i|}}(W_1 e_i + W_2(e_i \odot e_u))$$
+
+```math
+m _{u \leftarrow i} = \frac{1}{\sqrt{|\mathcal{N}_u||\mathcal{N}_i|}}(W_1 e_i + W_2(e_i \odot e_u))
+```
 
 **Message Aggregation**:
-$$e_{u}^{(k)} = \text{LeakyReLU}\left(m_{u \leftarrow u} + \sum_{i \in \mathcal{N}_{u}} m_{u \leftarrow i}\right)$$
+
+```math
+e _{u}^{(k)} = \text{LeakyReLU}\left(m _{u \leftarrow u} + \sum_{i \in \mathcal{N} _{u}} m _{u \leftarrow i}\right)
+```
 
 **Feature Interaction**: $e_i \odot e_u$ explicitly models user-item interaction.
 
 **Final Representation**:
-$$e_u^* = e_u^{(0)} || e_u^{(1)} || ... || e_u^{(K)}$$
+
+```math
+e_u^* = e_u^{(0)} || e_u^{(1)} || ... || e_u^{(K)}
+```
 
 #### GNN Methods Comparison
 
@@ -970,7 +1139,10 @@ Separate policy network (actor) and value network (critic).
 **Critic**: $Q(s,a; \theta^Q)$ evaluates state-action pairs
 
 **Actor Update**:
-$$\nabla_{\theta^{\mu}} J \approx \mathbb{E}\left[\nabla_{a} Q(s,a; \theta^{Q})|_{a=\mu(s)} \nabla_{\theta^{\mu}} \mu(s; \theta^{\mu})\right]$$
+
+```math
+\nabla _{\theta^{\mu}} J \approx \mathbb{E}\left[\nabla _{a} Q(s,a; \theta^{Q})| _{a=\mu(s)} \nabla _{\theta^{\mu}} \mu(s; \theta^{\mu})\right]
+```
 
 **Slate Recommendations**:
 Recommend multiple items simultaneously considering:
@@ -995,14 +1167,23 @@ Simplified RL: no state transitions, immediate reward only.
 where $A_a = \sum x_i x_i^T + I$, $b_a = \sum r_i x_i$
 
 **Selection** (UCB):
-$$a_t = \arg\max_a \left( x_t^T \hat{\theta}_a + \alpha \sqrt{x_t^T A_a^{-1} x_t} \right)$$
+
+```math
+a_t = \arg\max_a \left( x_t^T \hat{\theta}_a + \alpha \sqrt{x_t^T A_a^{-1} x_t} \right)
+```
 
 The second term encourages exploration of uncertain actions.
 
 **Thompson Sampling**:
 Sample from posterior distribution:
-$$\theta_a \sim \mathcal{N}(\hat{\theta}_a, A_a^{-1})$$
-$$a_t = \arg\max_a x_t^T \theta_a$$
+
+```math
+\theta_a \sim \mathcal{N}(\hat{\theta}_a, A_a^{-1})
+```
+
+```math
+a_t = \arg\max_a x_t^T \theta_a
+```
 
 **Neural Bandits**: Replace linear model with neural network.
 
@@ -1015,7 +1196,10 @@ $$a_t = \arg\max_a x_t^T \theta_a$$
 - Explore random arm with probability $\epsilon$
 
 **UCB**:
-$$a_t = \arg\max_a \left( \bar{r}_a + \sqrt{\frac{2\ln t}{n_a}} \right)$$
+
+```math
+a_t = \arg\max_a \left( \bar{r}_a + \sqrt{\frac{2\ln t}{n_a}} \right)
+```
 
 where $\bar{r}_a$ is average reward, $n_a$ is times arm pulled.
 
@@ -1149,13 +1333,22 @@ Optimizing only for accuracy can lead to filter bubbles and boring recommendatio
 #### Measuring Diversity
 
 **Intra-List Diversity** (within a recommendation list):
-$$\text{ILD} = \frac{2}{K(K-1)} \sum_{i=1}^{K-1} \sum_{j=i+1}^{K} (1 - \text{sim}(i,j))$$
+
+```math
+\text{ILD} = \frac{2}{K(K-1)} \sum_{i=1}^{K-1} \sum_{j=i+1}^{K} (1 - \text{sim}(i,j))
+```
 
 **Coverage** (catalog breadth):
-$$\text{Coverage} = \frac{|\text{Items Recommended}|}{|\text{Total Items}|}$$
+
+```math
+\text{Coverage} = \frac{|\text{Items Recommended}|}{|\text{Total Items}|}
+```
 
 **Gini Index** (equality of recommendation distribution):
-$$\text{Gini} = \frac{\sum_{i=1}^n (2i - n - 1) \cdot \text{freq}(i)}{n \sum_{i=1}^n \text{freq}(i)}$$
+
+```math
+\text{Gini} = \frac{\sum_{i=1}^n (2i - n - 1) \cdot \text{freq}(i)}{n \sum_{i=1}^n \text{freq}(i)}
+```
 
 Lower Gini → more equal distribution.
 
@@ -1163,13 +1356,19 @@ Lower Gini → more equal distribution.
 
 **Maximal Marginal Relevance (MMR)**:
 Select items balancing relevance and diversity:
-$$\text{MMR} = \arg\max_{i \in C \setminus S} [\lambda \cdot \text{Rel}(i) - (1-\lambda) \cdot \max_{j \in S} \text{Sim}(i,j)]$$
+
+```math
+\text{MMR} = \arg\max_{i \in C \setminus S} [\lambda \cdot \text{Rel}(i) - (1-\lambda) \cdot \max_{j \in S} \text{Sim}(i,j)]
+```
 
 where $C$ is candidates, $S$ is already selected, $\lambda$ balances relevance vs diversity.
 
 **Determinantal Point Processes (DPP)**:
 Probabilistic model favoring diverse subsets:
-$$P(Y) \propto \det(L_Y)$$
+
+```math
+P(Y) \propto \det(L_Y)
+```
 
 where $L$ is a kernel matrix encoding quality and similarity.
 - Large determinant → high quality, high diversity
@@ -1183,14 +1382,20 @@ where $L$ is a kernel matrix encoding quality and similarity.
 
 **Multi-Objective Optimization**:
 Jointly optimize accuracy and diversity:
-$$\mathcal{L} = \mathcal{L}_{\mathrm{accuracy}} + \alpha \cdot \mathcal{L}_{\mathrm{diversity}}$$
+
+```math
+\mathcal{L} = \mathcal{L} _{\mathrm{accuracy}} + \alpha \cdot \mathcal{L} _{\mathrm{diversity}}
+```
 
 #### Serendipity
 
 **Definition**: Surprising yet relevant recommendations (unexpected discoveries).
 
 **Formulation**:
-$$\text{Serendipity}(i) = \text{Relevance}(i) \times \text{Unexpectedness}(i)$$
+
+```math
+\text{Serendipity}(i) = \text{Relevance}(i) \times \text{Unexpectedness}(i)
+```
 
 **Measuring Unexpectedness**:
 - Distance from user's typical preferences
@@ -1301,12 +1506,18 @@ Recommender systems can perpetuate or amplify biases, with real-world consequenc
 #### Measuring Fairness
 
 **Individual Fairness**: Similar users should receive similar recommendations
-$$d(\text{rec}(u_1), \text{rec}(u_2)) \leq L \cdot d(u_1, u_2)$$
+
+```math
+d(\text{rec}(u_1), \text{rec}(u_2)) \leq L \cdot d(u_1, u_2)
+```
 
 **Group Fairness**: Equal performance across demographic groups
 
 **Demographic Parity**:
-$$P(\text{rec} = i | G = A) = P(\text{rec} = i | G = B)$$
+
+```math
+P(\text{rec} = i | G = A) = P(\text{rec} = i | G = B)
+```
 
 **Equal Opportunity**: Equal true positive rates across groups
 
@@ -1316,7 +1527,10 @@ $$P(\text{rec} = i | G = A) = P(\text{rec} = i | G = B)$$
 
 **Inverse Propensity Scoring (IPS)**:
 Weight training samples inversely to selection probability:
-$$\mathcal{L} = \sum_{(u,i) \in \mathcal{O}} \frac{1}{p(o=1|u,i)} \cdot \ell(r_{ui}, \hat{r}_{ui})$$
+
+```math
+\mathcal{L} = \sum_{(u,i) \in \mathcal{O}} \frac{1}{p(o=1|u,i)} \cdot \ell(r _{ui}, \hat{r} _{ui})
+```
 
 **Causal Inference**:
 Model confounders and use causal graphs
@@ -1331,7 +1545,10 @@ Train model to be invariant to sensitive attributes:
 
 **Constrained Optimization**:
 Add fairness constraints:
-$$\max_{\theta} \text{Accuracy} \quad \text{s.t.} \quad \text{Fairness} \geq \tau$$
+
+```math
+\max_{\theta} \text{Accuracy} \quad \text{s.t.} \quad \text{Fairness} \geq \tau
+```
 
 **Exposure Balancing**:
 Ensure long-tail items get adequate exposure
@@ -1340,7 +1557,10 @@ Ensure long-tail items get adequate exposure
 
 **Regularization**:
 Add fairness penalty to loss:
-$$\mathcal{L} = \mathcal{L}_{\mathrm{prediction}} + \lambda \cdot \mathcal{L}_{\mathrm{fairness}}$$
+
+```math
+\mathcal{L} = \mathcal{L} _{\mathrm{prediction}} + \lambda \cdot \mathcal{L} _{\mathrm{fairness}}
+```
 
 #### Ethical Considerations
 
@@ -1379,7 +1599,10 @@ Real-world systems optimize multiple, often conflicting objectives.
 #### Approaches
 
 **Weighted Sum**:
-$$\mathcal{L} = \alpha_1 \mathcal{L}_1 + \alpha_2 \mathcal{L}_2 + ... + \alpha_n \mathcal{L}_n$$
+
+```math
+\mathcal{L} = \alpha_1 \mathcal{L}_1 + \alpha_2 \mathcal{L}_2 + ... + \alpha_n \mathcal{L}_n
+```
 
 Simple but requires careful weight tuning.
 
@@ -1391,7 +1614,10 @@ Find Pareto-optimal solutions (improving one objective worsens another):
 
 **Constrained Optimization**:
 Optimize primary objective subject to constraints:
-$$\max_{\theta} \text{Revenue} \quad \text{s.t.} \quad \text{Diversity} \geq d_{\min}, \text{Fairness} \geq f_{\min}$$
+
+```math
+\max_{\theta} \text{Revenue} \quad \text{s.t.} \quad \text{Diversity} \geq d_{\min}, \text{Fairness} \geq f_{\min}
+```
 
 **Multi-Task Learning**:
 Shared representation for multiple tasks:
