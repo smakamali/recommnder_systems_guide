@@ -190,12 +190,12 @@ Recommends items liked by similar users.
 $$\text{sim}(u, v) = \frac{\sum_{i \in I_{uv}} r_{ui} \cdot r_{vi}}{\sqrt{\sum_{i \in I_{uv}} r_{ui}^2} \cdot \sqrt{\sum_{i \in I_{uv}} r_{vi}^2}}$$
 
 **Pearson Correlation**:
-$$\text{sim}(u, v) = \frac{\sum_{i \in I_{uv}} (r_{ui} - \bar{r}_u)(r_{vi} - \bar{r}_v)}{\sqrt{\sum_{i \in I_{uv}} (r_{ui} - \bar{r}_u)^2} \cdot \sqrt{\sum_{i \in I_{uv}} (r_{vi} - \bar{r}_v)^2}}$$
+$$\text{sim}(u, v) = \frac{\sum_{i \in I_{uv}} (r_{ui} - \bar{r}_{u})(r_{vi} - \bar{r}_{v})}{\sqrt{\sum_{i \in I_{uv}} (r_{ui} - \bar{r}_{u})^2} \cdot \sqrt{\sum_{i \in I_{uv}} (r_{vi} - \bar{r}_{v})^2}}$$
 
 **Prediction Formula**:
-$$\hat{r}_{ui} = \bar{r}_u + \frac{\sum_{v \in N(u)} \text{sim}(u,v) \cdot (r_{vi} - \bar{r}_v)}{\sum_{v \in N(u)} |\text{sim}(u,v)|}$$
+$$\hat{r}_{ui} = \bar{r}_{u} + \frac{\sum_{v \in N(u)} \text{sim}(u,v) \cdot (r_{vi} - \bar{r}_{v})}{\sum_{v \in N(u)} |\text{sim}(u,v)|}$$
 
-where $N(u)$ is the neighborhood of similar users, and $\bar{r}_u$ is the average rating of user $u$.
+where $N(u)$ is the neighborhood of similar users, and $\bar{r}_{u}$ is the average rating of user $u$.
 
 #### Item-Based Collaborative Filtering
 
@@ -355,7 +355,7 @@ Combine multiple recommendation approaches to leverage their complementary stren
 #### Hybridization Strategies
 
 **Weighted Hybrid**:
-$$\text{score}(u,i) = \alpha \cdot \text{score}_{\text{CF}}(u,i) + (1-\alpha) \cdot \text{score}_{\text{CB}}(u,i)$$
+$$\text{score}(u,i) = \alpha \cdot \text{score}_{\mathrm{CF}}(u,i) + (1-\alpha) \cdot \text{score}_{\mathrm{CB}}(u,i)$$
 
 **Switching Hybrid**:
 Use different methods based on context (e.g., content-based for new items, CF for existing items).
@@ -392,7 +392,7 @@ Neural Collaborative Filtering (NCF) replaces the dot product in matrix factoriz
 #### Generalized Matrix Factorization (GMF)
 
 Neural interpretation of matrix factorization:
-$$\hat{r}_{ui} = a_{out}(h^T(p_u \odot q_i))$$
+$$\hat{r}_{ui} = a_{\mathrm{out}}(h^{T}(p_{u} \odot q_{i}))$$
 
 where $\odot$ is element-wise product, $h$ is the edge weights, and $a_{out}$ is the output activation.
 
@@ -432,7 +432,8 @@ graph TB
 
 **Training**:
 - Loss function: Binary cross-entropy for implicit feedback
-$$\mathcal{L} = -\sum_{(u,i,y) \in \mathcal{T}} y \log \hat{y}_{ui} + (1-y)\log(1-\hat{y}_{ui})$$
+
+$$\mathcal{L} = -\sum_{(u,i,y) \in \mathcal{T}} \left[ y \log \hat{y}_{ui} + (1-y)\log(1-\hat{y}_{ui}) \right]$$
 
 **Key Insights**:
 - Separate embeddings for GMF and MLP paths improve performance
@@ -476,7 +477,7 @@ Probabilistic autoencoders with latent variable modeling:
 **Decoder**: $p_\theta(r_u|z) = \text{Multinomial}(r_u; \pi_\theta(z))$
 
 **ELBO Loss**:
-$$\mathcal{L} = -\mathbb{E}_{q_\phi(z|r_u)}[\log p_\theta(r_u|z)] + \text{KL}(q_\phi(z|r_u) || p(z))$$
+$$\mathcal{L} = -\mathbb{E}_{q_{\phi}(z|r_{u})}[\log p_{\theta}(r_{u}|z)] + \text{KL}(q_{\phi}(z|r_{u}) \| p(z))$$
 
 **Mult-VAE**: Uses multinomial likelihood for implicit feedback, achieving state-of-the-art results on many benchmarks.
 
@@ -513,15 +514,15 @@ where $x_t$ is the embedding of item at step $t$, and $\hat{y}_t$ is the predict
 #### Ranking Loss Functions
 
 **Bayesian Personalized Ranking (BPR)**:
-$$\mathcal{L}_{BPR} = -\sum_{(i,j) \in D_s} \log \sigma(\hat{r}_{si} - \hat{r}_{sj})$$
+$$\mathcal{L}_{\mathrm{BPR}} = -\sum_{(i,j) \in D_{s}} \log \sigma(\hat{r}_{si} - \hat{r}_{sj})$$
 
 where item $i$ is observed in session $s$, and $j$ is a negative sample.
 
 **TOP1 Loss** (relative ranking):
-$$\mathcal{L}_{TOP1} = \sum_{j \in S} \sigma(\hat{r}_{sj} - \hat{r}_{si}) + \sigma(\hat{r}_{sj}^2)$$
+$$\mathcal{L}_{\mathrm{TOP1}} = \sum_{j \in S} \left[ \sigma(\hat{r}_{sj} - \hat{r}_{si}) + \sigma(\hat{r}_{sj}^{2}) \right]$$
 
 **TOP1-max** (simplified):
-$$\mathcal{L}_{TOP1\text{-}max} = \sigma(\max_{j \in S}(\hat{r}_{sj}) - \hat{r}_{si})$$
+$$\mathcal{L}_{\mathrm{TOP1\text{-}max}} = \sigma\left(\max_{j \in S}(\hat{r}_{sj}) - \hat{r}_{si}\right)$$
 
 #### Extensions
 
@@ -688,10 +689,11 @@ Removes unnecessary complexity from GCNs for better recommendation performance.
 **Key Insight**: Feature transformations and non-linear activations hurt performance in CF.
 
 **Layer-wise Propagation**:
-$$e_u^{(k+1)} = \sum_{i \in \mathcal{N}_u} \frac{1}{\sqrt{|\mathcal{N}_u||\mathcal{N}_i|}} e_i^{(k)}$$
-$$e_i^{(k+1)} = \sum_{u \in \mathcal{N}_i} \frac{1}{\sqrt{|\mathcal{N}_i||\mathcal{N}_u|}} e_u^{(k)}$$
+$$e_{u}^{(k+1)} = \sum_{i \in \mathcal{N}_{u}} \frac{1}{\sqrt{|\mathcal{N}_{u}||\mathcal{N}_{i}|}} e_{i}^{(k)}$$
 
-where $\mathcal{N}_u$ is the set of items interacted by user $u$.
+$$e_{i}^{(k+1)} = \sum_{u \in \mathcal{N}_{i}} \frac{1}{\sqrt{|\mathcal{N}_{i}||\mathcal{N}_{u}|}} e_{u}^{(k)}$$
+
+where $\mathcal{N}_{u}$ is the set of items interacted by user $u$.
 
 **Layer Combination**:
 $$e_u = \sum_{k=0}^K \alpha_k e_u^{(k)}, \quad e_i = \sum_{k=0}^K \alpha_k e_i^{(k)}$$
@@ -707,7 +709,7 @@ $$E^{(k+1)} = (D^{-1/2}AD^{-1/2})E^{(k)}$$
 where $A$ is the adjacency matrix and $D$ is the degree matrix.
 
 **Loss Function** (BPR):
-$$\mathcal{L} = -\sum_{(u,i,j) \in \mathcal{O}} \ln \sigma(\hat{y}_{ui} - \hat{y}_{uj}) + \lambda||E^{(0)}||^2$$
+$$\mathcal{L} = -\sum_{(u,i,j) \in \mathcal{O}} \ln \sigma(\hat{y}_{ui} - \hat{y}_{uj}) + \lambda\|E^{(0)}\|^{2}$$
 
 **Why It Works**:
 - Symmetric normalization prevents scale issues
@@ -749,7 +751,7 @@ Explicitly models high-order connectivity through embedding propagation.
 $$m_{u \leftarrow i} = \frac{1}{\sqrt{|\mathcal{N}_u||\mathcal{N}_i|}}(W_1 e_i + W_2(e_i \odot e_u))$$
 
 **Message Aggregation**:
-$$e_u^{(k)} = \text{LeakyReLU}(m_{u \leftarrow u} + \sum_{i \in \mathcal{N}_u} m_{u \leftarrow i})$$
+$$e_{u}^{(k)} = \text{LeakyReLU}\left(m_{u \leftarrow u} + \sum_{i \in \mathcal{N}_{u}} m_{u \leftarrow i}\right)$$
 
 **Feature Interaction**: $e_i \odot e_u$ explicitly models user-item interaction.
 
@@ -968,7 +970,7 @@ Separate policy network (actor) and value network (critic).
 **Critic**: $Q(s,a; \theta^Q)$ evaluates state-action pairs
 
 **Actor Update**:
-$$\nabla_{\theta^\mu} J \approx \mathbb{E}[\nabla_a Q(s,a; \theta^Q)|_{a=\mu(s)} \nabla_{\theta^\mu} \mu(s; \theta^\mu)]$$
+$$\nabla_{\theta^{\mu}} J \approx \mathbb{E}\left[\nabla_{a} Q(s,a; \theta^{Q})|_{a=\mu(s)} \nabla_{\theta^{\mu}} \mu(s; \theta^{\mu})\right]$$
 
 **Slate Recommendations**:
 Recommend multiple items simultaneously considering:
@@ -1181,7 +1183,7 @@ where $L$ is a kernel matrix encoding quality and similarity.
 
 **Multi-Objective Optimization**:
 Jointly optimize accuracy and diversity:
-$$\mathcal{L} = \mathcal{L}_{\text{accuracy}} + \alpha \cdot \mathcal{L}_{\text{diversity}}$$
+$$\mathcal{L} = \mathcal{L}_{\mathrm{accuracy}} + \alpha \cdot \mathcal{L}_{\mathrm{diversity}}$$
 
 #### Serendipity
 
@@ -1338,7 +1340,7 @@ Ensure long-tail items get adequate exposure
 
 **Regularization**:
 Add fairness penalty to loss:
-$$\mathcal{L} = \mathcal{L}_{\text{prediction}} + \lambda \cdot \mathcal{L}_{\text{fairness}}$$
+$$\mathcal{L} = \mathcal{L}_{\mathrm{prediction}} + \lambda \cdot \mathcal{L}_{\mathrm{fairness}}$$
 
 #### Ethical Considerations
 
