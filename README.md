@@ -190,7 +190,7 @@ Recommends items liked by similar users.
 $$\text{sim}(u, v) = \frac{\sum_{i \in I_{uv}} r_{ui} \cdot r_{vi}}{\sqrt{\sum_{i \in I_{uv}} r_{ui}^2} \cdot \sqrt{\sum_{i \in I_{uv}} r_{vi}^2}}$$
 
 **Pearson Correlation**:
-$$\text{sim}(u, v) = \frac{\sum_{i \in I_{uv}} (r_{ui} - \bar{r}_{u})(r_{vi} - \bar{r}_{v})}{\sqrt{\sum_{i \in I_{uv}} (r_{ui} - \bar{r}_{u})^2} \cdot \sqrt{\sum_{i \in I_{uv}} (r_{vi} - \bar{r}_{v})^2}}$$
+$$\text{sim}(u, v) = \frac{\sum_{i \in I_{uv}} (r_{ui} - \bar{r}_{u}) \cdot (r_{vi} - \bar{r}_{v})}{\sqrt{\sum_{i \in I_{uv}} (r_{ui} - \bar{r}_{u})^2} \cdot \sqrt{\sum_{i \in I_{uv}} (r_{vi} - \bar{r}_{v})^2}}$$
 
 **Prediction Formula**:
 $$\hat{r}_{ui} = \bar{r}_{u} + \frac{\sum_{v \in N(u)} \text{sim}(u,v) \cdot (r_{vi} - \bar{r}_{v})}{\sum_{v \in N(u)} |\text{sim}(u,v)|}$$
