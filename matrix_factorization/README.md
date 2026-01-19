@@ -23,9 +23,13 @@ For detailed theory, see: [`../README.md`](../README.md) Section 2.3 - Matrix Fa
 
 ## Algorithm Approaches
 
-This implementation includes two optimization approaches:
+This implementation includes two optimization approaches with three implementations:
 
 ### 1. Alternating Least Squares (ALS)
+
+**Two implementations provided:**
+- **ALS (implicit library)**: Production-ready implementation using the `implicit` library (`mf_als.py`)
+- **ALS (from scratch)**: Educational implementation using only NumPy, following the guide's pseudocode exactly (`mf_als_from_scratch.py`)
 
 **Loss Function**:
 $$\mathcal{L} = \sum_{(u,i) \in \mathcal{O}} (r_{ui} - p_u^T q_i)^2 + \lambda(||p_u||^2 + ||q_i||^2)$$
@@ -72,7 +76,7 @@ conda activate recom_sys
 
 This will install all dependencies, including `scikit-surprise` via conda (which avoids C++ compilation requirements on Windows).
 
-#### Option 2: Using pip (Manual scikit-surprise installation required)
+#### Option 2: Using pip (Manual installation)
 
 1. Navigate to this directory:
 ```bash
@@ -86,7 +90,7 @@ conda install -c conda-forge scikit-surprise
 
 3. Install remaining dependencies via pip:
 ```bash
-pip install -r requirements.txt
+pip install implicit numpy pandas matplotlib scikit-learn scipy
 ```
 
 **Note**: On Windows, `scikit-surprise` requires Microsoft Visual C++ 14.0 or greater when installing via pip. Using conda avoids this requirement.
@@ -115,10 +119,9 @@ The dataset is automatically downloaded on first use via the Surprise library.
 ```
 matrix_factorization/
 ├── README.md                   # This file
-├── requirements.txt            # Python dependencies (pip)
 ├── environment.yml             # Conda environment file (recommended)
 ├── data_loader.py             # Load and preprocess MovieLens 100K
-├── mf_als.py                  # ALS implementation
+├── mf_als.py                  # ALS implementation (using implicit library)
 ├── mf_sgd.py                  # SGD implementation
 ├── mf_als_from_scratch.py     # Educational ALS from scratch (NumPy)
 ├── evaluation.py              # Evaluation metrics (RMSE, MAE, etc.)
@@ -131,7 +134,7 @@ matrix_factorization/
 
 ### Quick Start: Complete Pipeline
 
-Run the complete pipeline that trains both models, evaluates them, and generates recommendations:
+Run the complete pipeline that trains three models, evaluates them, and generates recommendations:
 
 ```bash
 python main.py
@@ -140,11 +143,12 @@ python main.py
 This will:
 1. Load MovieLens 100K dataset
 2. Split into train/test (80/20)
-3. Train ALS model
-4. Train SGD model
-5. Evaluate both models (RMSE, MAE, Precision@K, Recall@K)
-6. Generate sample recommendations
-7. Save results to `results/`
+3. Train ALS model (using implicit library)
+4. Train ALS from scratch model (educational NumPy implementation)
+5. Train SGD model
+6. Evaluate all three models (RMSE, MAE, Precision@K, Recall@K, NDCG@K, Hit Rate@K)
+7. Generate sample recommendations
+8. Save results to `results/`
 
 ### Individual Components
 
@@ -257,8 +261,8 @@ See: [`../README.md`](../README.md) Section 1.3 - Evaluation Metrics (lines 104-
 
 After running `main.py`, check `results/matrix_factorization_results.txt` for:
 - RMSE and MAE (lower is better)
-- Precision@10 and Recall@10 (higher is better)
-- Comparison between ALS and SGD
+- Precision@10, Recall@10, NDCG@10, and Hit Rate@10 (higher is better)
+- Comparison between all three models: ALS (implicit), ALS (from scratch), and SGD
 
 **Typical Results** (MovieLens 100K):
 - RMSE: ~0.92-0.96
@@ -271,12 +275,12 @@ After running `main.py`, check `results/matrix_factorization_results.txt` for:
 ## Key Files Explained
 
 - **`data_loader.py`**: Handles MovieLens dataset loading and train/test splitting
-- **`mf_als.py`**: ALS implementation using NumPy and Surprise's dataset structure
+- **`mf_als.py`**: ALS implementation using implicit library (efficient production-ready implementation)
 - **`mf_sgd.py`**: SGD implementation using Surprise's SVD class
-- **`mf_als_from_scratch.py`**: Educational implementation following guide pseudocode exactly
+- **`mf_als_from_scratch.py`**: Educational implementation following guide pseudocode exactly (NumPy only)
 - **`evaluation.py`**: Implements RMSE, MAE, Precision@K, Recall@K, NDCG@K, Hit Rate@K
 - **`recommend.py`**: Generates top-N recommendations with cold start handling
-- **`main.py`**: Orchestrates the complete pipeline
+- **`main.py`**: Orchestrates the complete pipeline (trains all three models)
 
 ## Cold Start Handling
 
@@ -294,15 +298,16 @@ See: [`../README.md`](../README.md) Section 5.1 - Cold Start Problem (lines 1252
 
 ## Comparison: ALS vs SGD
 
-| Aspect | ALS | SGD |
-|--------|-----|-----|
-| **Convergence** | Fast (few iterations) | Slower (more epochs needed) |
-| **Parallelization** | Excellent (independent updates) | Limited (sequential gradient updates) |
-| **Memory** | Higher (stores full matrices) | Lower (updates per example) |
-| **Hyperparameters** | Fewer (no learning rate) | More (learning rate tuning) |
-| **Best For** | Medium datasets, need speed | Large datasets, limited memory |
+| Aspect | ALS (implicit) | ALS (from scratch) | SGD |
+|--------|----------------|-------------------|-----|
+| **Implementation** | Production library | Educational NumPy | Surprise SVD |
+| **Convergence** | Fast (few iterations) | Fast (few iterations) | Slower (more epochs needed) |
+| **Parallelization** | Excellent (independent updates) | Good (independent updates) | Limited (sequential gradient updates) |
+| **Memory** | Higher (stores full matrices) | Higher (stores full matrices) | Lower (updates per example) |
+| **Hyperparameters** | Fewer (no learning rate) | Fewer (no learning rate) | More (learning rate tuning) |
+| **Best For** | Medium datasets, need speed | Learning/understanding | Large datasets, limited memory |
 
-Both achieve similar accuracy on MovieLens 100K.
+All three implementations achieve similar accuracy on MovieLens 100K. The ALS from scratch implementation is primarily for educational purposes to understand the algorithm.
 
 ## Next Steps
 
@@ -332,7 +337,7 @@ conda activate recom_sys
 Or manually:
 ```bash
 conda install -c conda-forge scikit-surprise
-pip install -r requirements.txt
+pip install implicit numpy pandas matplotlib scikit-learn scipy
 ```
 
 ### Dataset Download Issues

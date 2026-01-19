@@ -209,7 +209,7 @@ def main():
     
     # Step 8: Save results
     print("\n" + "=" * 60)
-    print("[Step 7] Saving Results...")
+    print("[Step 8] Saving Results...")
     print("=" * 60)
     
     results_summary = {
