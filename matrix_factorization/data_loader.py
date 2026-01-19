@@ -5,9 +5,8 @@ This module handles downloading and loading the MovieLens 100K dataset,
 including train/test splitting and data preprocessing.
 """
 
-import os
 import pandas as pd
-from surprise import Dataset, Reader
+from surprise import Dataset
 from surprise.model_selection import train_test_split
 
 

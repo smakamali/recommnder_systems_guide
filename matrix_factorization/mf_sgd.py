@@ -11,9 +11,6 @@ Reference: Guide Section 2.3 - Matrix Factorization
 """
 
 from surprise import SVD
-from surprise import accuracy
-from surprise.model_selection import cross_validate
-
 
 def train_sgd_model(trainset, n_factors=50, n_epochs=20, lr_all=0.005, reg_all=0.02, 
                    random_state=42, verbose=True):

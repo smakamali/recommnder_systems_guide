@@ -15,7 +15,6 @@ Reference: Guide Section 2.3 - Matrix Factorization
 """
 
 import os
-import sys
 from datetime import datetime
 
 # Import modules
@@ -23,7 +22,7 @@ from data_loader import load_movielens_100k, get_train_test_split, get_dataset_s
 from mf_als import train_als_model
 from mf_sgd import train_sgd_model
 from mf_als_from_scratch import train_als_from_scratch_model
-from evaluation import evaluate_model, compare_sgd_als, calculate_rmse, calculate_mae
+from evaluation import evaluate_model
 from recommend import generate_top_n_recommendations, print_recommendations
 
 
