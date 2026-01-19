@@ -213,7 +213,7 @@ class ALSFromScratch:
         self.trainset = trainset
         print(f"Training ALS from scratch (guide pseudocode implementation)...")
         print(f"  Latent factors (k): {self.k}")
-        print(f"  Regularization (λ): {self.lambda_reg}")
+        print(f"  Regularization (lambda): {self.lambda_reg}")
         print(f"  Iterations: {self.iterations}")
         
         self.P, self.Q = als_matrix_factorization(

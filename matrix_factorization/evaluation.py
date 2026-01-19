@@ -347,9 +347,12 @@ def compare_sgd_als(sgd_model, als_model, testset):
     sgd_predictions = sgd_model.test(testset)
     als_predictions = []
     
-    for uid, iid, true_r, _ in sgd_predictions:
-        pred_r = als_model.predict(uid, iid)
-        als_predictions.append((uid, iid, true_r, pred_r))
+    for pred in sgd_predictions:
+        uid = pred.uid
+        iid = pred.iid
+        true_r = pred.r_ui
+        als_pred_r = als_model.predict(uid, iid)
+        als_predictions.append((uid, iid, true_r, als_pred_r))
     
     # Calculate metrics
     sgd_rmse = calculate_rmse(sgd_predictions)

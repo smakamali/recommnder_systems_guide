@@ -41,7 +41,7 @@ def train_sgd_model(trainset, n_factors=50, n_epochs=20, lr_all=0.005, reg_all=0
         print("Training SGD Matrix Factorization...")
         print(f"  Latent factors (k): {n_factors}")
         print(f"  Learning rate: {lr_all}")
-        print(f"  Regularization (λ): {reg_all}")
+        print(f"  Regularization (lambda): {reg_all}")
         print(f"  Epochs: {n_epochs}")
     
     # Surprise's SVD uses SGD by default

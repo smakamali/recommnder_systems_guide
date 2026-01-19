@@ -84,10 +84,8 @@ class ALSMatrixFactorization:
         col_indices = []
         values = []
         
-        for uid, iid, rating in trainset.all_ratings():
-            u = trainset.to_inner_uid(uid)
-            i = trainset.to_inner_iid(iid)
-            
+        # all_ratings() returns inner IDs directly, no conversion needed
+        for u, i, rating in trainset.all_ratings():
             row_indices.append(u)
             col_indices.append(i)
             # implicit library works with confidence/preference values
@@ -176,7 +174,7 @@ def train_als_model(trainset, n_factors=50, reg=0.1, n_iter=50, random_state=42)
     """
     print(f"Training ALS Matrix Factorization (using implicit library)...")
     print(f"  Latent factors (k): {n_factors}")
-    print(f"  Regularization (λ): {reg}")
+    print(f"  Regularization (lambda): {reg}")
     print(f"  Iterations: {n_iter}")
     
     model = ALSMatrixFactorization(

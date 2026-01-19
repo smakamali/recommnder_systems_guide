@@ -53,26 +53,53 @@ SGD optimizes the same loss function using gradient descent:
 ### Prerequisites
 
 - Python 3.8 or higher
-- pip package manager
+- conda (recommended) or pip package manager
 
 ### Setup
+
+#### Option 1: Using Conda (Recommended - avoids C++ build issues)
 
 1. Navigate to this directory:
 ```bash
 cd matrix_factorization
 ```
 
-2. Install dependencies:
+2. Create and activate the conda environment:
+```bash
+conda env create -f environment.yml
+conda activate recom_sys
+```
+
+This will install all dependencies, including `scikit-surprise` via conda (which avoids C++ compilation requirements on Windows).
+
+#### Option 2: Using pip (Manual scikit-surprise installation required)
+
+1. Navigate to this directory:
+```bash
+cd matrix_factorization
+```
+
+2. Install `scikit-surprise` via conda first (to avoid C++ build tools requirement):
+```bash
+conda install -c conda-forge scikit-surprise
+```
+
+3. Install remaining dependencies via pip:
 ```bash
 pip install -r requirements.txt
 ```
 
-The required packages are:
-- `surprise` - Matrix factorization library
+**Note**: On Windows, `scikit-surprise` requires Microsoft Visual C++ 14.0 or greater when installing via pip. Using conda avoids this requirement.
+
+### Required Packages
+
+- `scikit-surprise` - Matrix factorization library (install via conda)
+- `implicit` - Implicit feedback recommendation algorithms
 - `numpy` - Numerical computations
 - `pandas` - Data manipulation
 - `matplotlib` - Visualization
-- `scikit-learn` - Utility functions
+- `scikit-learn` - Machine learning utilities
+- `scipy` - Scientific computing library
 
 ## Dataset
 
@@ -88,7 +115,8 @@ The dataset is automatically downloaded on first use via the Surprise library.
 ```
 matrix_factorization/
 ├── README.md                   # This file
-├── requirements.txt            # Python dependencies
+├── requirements.txt            # Python dependencies (pip)
+├── environment.yml             # Conda environment file (recommended)
 ├── data_loader.py             # Load and preprocess MovieLens 100K
 ├── mf_als.py                  # ALS implementation
 ├── mf_sgd.py                  # SGD implementation
@@ -295,8 +323,15 @@ Main guide: [`../README.md`](../README.md)
 
 ### Import Errors
 
-Ensure all dependencies are installed:
+Ensure all dependencies are installed. Use conda for easiest setup:
 ```bash
+conda env create -f environment.yml
+conda activate recom_sys
+```
+
+Or manually:
+```bash
+conda install -c conda-forge scikit-surprise
 pip install -r requirements.txt
 ```
 
