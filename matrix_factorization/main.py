@@ -22,7 +22,7 @@ from datetime import datetime
 from data_loader import load_movielens_100k, get_train_test_split, get_dataset_stats
 from mf_als import train_als_model
 from mf_sgd import train_sgd_model
-from mf_als_from_scratch import ALSFromScratch, predict_rating
+from mf_als_from_scratch import train_als_from_scratch_model
 from evaluation import evaluate_model, compare_sgd_als, calculate_rmse, calculate_mae
 from recommend import generate_top_n_recommendations, print_recommendations
 
@@ -95,8 +95,14 @@ def main():
     print("\n" + "=" * 60)
     print("[Step 4] Training ALS Matrix Factorization from Scratch...")
     print("=" * 60)
-    als_scratch_model = ALSFromScratch(k=50, lambda_reg=0.1, iterations=50, random_state=42)
-    als_scratch_model.fit(trainset, verbose=True)
+    als_scratch_model = train_als_from_scratch_model(
+        trainset,
+        k=50,
+        lambda_reg=0.1,
+        iterations=50,
+        random_state=42,
+        verbose=True
+    )
     
     # Step 5: Train SGD model
     print("\n" + "=" * 60)

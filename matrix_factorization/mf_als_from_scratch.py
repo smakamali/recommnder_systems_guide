@@ -245,6 +245,30 @@ class ALSFromScratch:
         return predict_rating(self.P, self.Q, self.trainset, uid, iid)
 
 
+def train_als_from_scratch_model(trainset, k=50, lambda_reg=0.1, iterations=50, 
+                                  random_state=42, verbose=True):
+    """
+    Train an ALS model from scratch.
+    
+    This function encapsulates model instantiation and training.
+    
+    Args:
+        trainset: Surprise Trainset object
+        k (int): Number of latent factors (default: 50)
+        lambda_reg (float): Regularization parameter λ (default: 0.1)
+        iterations (int): Number of iterations (default: 50)
+        random_state (int): Random seed (default: 42)
+        verbose (bool): Print progress (default: True)
+        
+    Returns:
+        ALSFromScratch: Trained model
+    """
+    model = ALSFromScratch(k=k, lambda_reg=lambda_reg, iterations=iterations, 
+                           random_state=random_state)
+    model.fit(trainset, verbose=verbose)
+    return model
+
+
 if __name__ == "__main__":
     # Example usage
     print("=" * 60)
@@ -257,8 +281,7 @@ if __name__ == "__main__":
     trainset, testset = get_train_test_split(data)
     
     # Train model
-    model = ALSFromScratch(k=50, lambda_reg=0.1, iterations=50)
-    model.fit(trainset, verbose=True)
+    model = train_als_from_scratch_model(trainset, k=50, lambda_reg=0.1, iterations=50, verbose=True)
     
     # Test prediction
     sample_uid = testset[0][0]
