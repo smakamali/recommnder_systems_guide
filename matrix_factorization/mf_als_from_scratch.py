@@ -55,10 +55,10 @@ def als_matrix_factorization(trainset, k=50, lambda_reg=0.1, iterations=50,
     user_items = {}
     item_users = {}
     
-    for uid, iid, rating in trainset.all_ratings():
-        u = trainset.to_inner_uid(uid)
-        i = trainset.to_inner_iid(iid)
-        
+    for u, i, rating in trainset.all_ratings():
+        # u = trainset.to_inner_uid(uid)
+        # i = trainset.to_inner_iid(iid)
+
         if u not in user_items:
             user_items[u] = []
         user_items[u].append((i, rating))
@@ -136,9 +136,9 @@ def calculate_loss(trainset, P, Q, lambda_reg):
     """
     error_sum = 0.0
     
-    for uid, iid, rating in trainset.all_ratings():
-        u = trainset.to_inner_uid(uid)
-        i = trainset.to_inner_iid(iid)
+    for u, i, rating in trainset.all_ratings():
+        # u = trainset.to_inner_uid(uid)
+        # i = trainset.to_inner_iid(iid)
         
         # Predicted rating: p_u^T * q_i (guide line 344)
         prediction = P[:, u].dot(Q[:, i])
@@ -169,13 +169,14 @@ def predict_rating(P, Q, trainset, uid, iid):
         float: Predicted rating
     """
     try:
+        # Convert raw IDs to inner IDs (indices into P and Q matrices)
         u = trainset.to_inner_uid(uid)
         i = trainset.to_inner_iid(iid)
         prediction = P[:, u].dot(Q[:, i])
         # Clip to valid rating range
         return np.clip(prediction, 1.0, 5.0)
-    except ValueError:
-        # Cold start - return global mean
+    except (ValueError, KeyError):
+        # Cold start - return global mean if user/item not in training set
         return trainset.global_mean
 
 

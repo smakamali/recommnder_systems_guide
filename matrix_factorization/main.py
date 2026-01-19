@@ -22,7 +22,8 @@ from datetime import datetime
 from data_loader import load_movielens_100k, get_train_test_split, get_dataset_stats
 from mf_als import train_als_model
 from mf_sgd import train_sgd_model
-from evaluation import evaluate_model, compare_sgd_als
+from mf_als_from_scratch import ALSFromScratch, predict_rating
+from evaluation import evaluate_model, compare_sgd_als, calculate_rmse, calculate_mae
 from recommend import generate_top_n_recommendations, print_recommendations
 
 
@@ -90,9 +91,16 @@ def main():
         random_state=42
     )
     
-    # Step 4: Train SGD model
+    # Step 4: Train ALS from Scratch
     print("\n" + "=" * 60)
-    print("[Step 4] Training SGD Matrix Factorization...")
+    print("[Step 4] Training ALS Matrix Factorization from Scratch...")
+    print("=" * 60)
+    als_scratch_model = ALSFromScratch(k=50, lambda_reg=0.1, iterations=50, random_state=42)
+    als_scratch_model.fit(trainset, verbose=True)
+    
+    # Step 5: Train SGD model
+    print("\n" + "=" * 60)
+    print("[Step 5] Training SGD Matrix Factorization...")
     print("=" * 60)
     sgd_model = train_sgd_model(
         trainset,
@@ -103,12 +111,12 @@ def main():
         random_state=42
     )
     
-    # Step 5: Evaluate both models
+    # Step 6: Evaluate all models
     print("\n" + "=" * 60)
-    print("[Step 5] Evaluating Models...")
+    print("[Step 6] Evaluating All Models...")
     print("=" * 60)
     
-    print("\nEvaluating ALS model...")
+    print("\nEvaluating ALS (implicit library) model...")
     als_predictions = []
     for uid, iid, true_r in testset:
         pred_r = als_model.predict(uid, iid)
@@ -116,16 +124,57 @@ def main():
     
     als_results = evaluate_model(als_predictions, k=10, threshold=4.0, verbose=True)
     
+    print("\nEvaluating ALS from Scratch model...")
+    als_scratch_predictions = []
+    for uid, iid, true_r in testset:
+        pred_r = als_scratch_model.predict(uid, iid)
+        als_scratch_predictions.append((uid, iid, true_r, pred_r))
+    
+    als_scratch_results = evaluate_model(als_scratch_predictions, k=10, threshold=4.0, verbose=True)
+    
     print("\nEvaluating SGD model...")
     sgd_predictions = sgd_model.test(testset)
     sgd_results = evaluate_model(sgd_predictions, k=10, threshold=4.0, verbose=True)
     
-    # Compare models using evaluation function
-    comparison_results = compare_sgd_als(sgd_model, als_model, testset)
-    
-    # Step 6: Generate sample recommendations
+    # Compare all three models
     print("\n" + "=" * 60)
-    print("[Step 6] Generating Sample Recommendations...")
+    print("Model Comparison: All Three Models")
+    print("=" * 60)
+    
+    print(f"\nRMSE:")
+    print(f"  ALS (implicit):     {als_results['rmse']:.4f}")
+    print(f"  ALS (from scratch): {als_scratch_results['rmse']:.4f}")
+    print(f"  SGD:                {sgd_results['rmse']:.4f}")
+    
+    print(f"\nMAE:")
+    print(f"  ALS (implicit):     {als_results['mae']:.4f}")
+    print(f"  ALS (from scratch): {als_scratch_results['mae']:.4f}")
+    print(f"  SGD:                {sgd_results['mae']:.4f}")
+    
+    print(f"\nPrecision@10:")
+    print(f"  ALS (implicit):     {als_results['precision@10']:.4f}")
+    print(f"  ALS (from scratch): {als_scratch_results['precision@10']:.4f}")
+    print(f"  SGD:                {sgd_results['precision@10']:.4f}")
+    
+    print(f"\nRecall@10:")
+    print(f"  ALS (implicit):     {als_results['recall@10']:.4f}")
+    print(f"  ALS (from scratch): {als_scratch_results['recall@10']:.4f}")
+    print(f"  SGD:                {sgd_results['recall@10']:.4f}")
+    
+    print(f"\nNDCG@10:")
+    print(f"  ALS (implicit):     {als_results['ndcg@10']:.4f}")
+    print(f"  ALS (from scratch): {als_scratch_results['ndcg@10']:.4f}")
+    print(f"  SGD:                {sgd_results['ndcg@10']:.4f}")
+    
+    print(f"\nHit Rate@10:")
+    print(f"  ALS (implicit):     {als_results['hit_rate@10']:.4f}")
+    print(f"  ALS (from scratch): {als_scratch_results['hit_rate@10']:.4f}")
+    print(f"  SGD:                {sgd_results['hit_rate@10']:.4f}")
+    print("=" * 60)
+    
+    # Step 7: Generate sample recommendations
+    print("\n" + "=" * 60)
+    print("[Step 7] Generating Sample Recommendations...")
     print("=" * 60)
     
     # Use SGD model for recommendations (can switch to ALS)
@@ -139,13 +188,20 @@ def main():
     print_recommendations(sample_user, recommendations, max_display=10)
     
     # Also show ALS recommendations for comparison
-    print(f"\nGenerating top-10 recommendations for user {sample_user} (ALS model)...")
+    print(f"\nGenerating top-10 recommendations for user {sample_user} (ALS implicit library)...")
     als_recommendations = generate_top_n_recommendations(
         als_model, trainset, sample_user, n=10, exclude_rated=True
     )
     print_recommendations(sample_user, als_recommendations, max_display=10)
     
-    # Step 7: Save results
+    # Show ALS from scratch recommendations
+    print(f"\nGenerating top-10 recommendations for user {sample_user} (ALS from scratch)...")
+    als_scratch_recommendations = generate_top_n_recommendations(
+        als_scratch_model, trainset, sample_user, n=10, exclude_rated=True
+    )
+    print_recommendations(sample_user, als_scratch_recommendations, max_display=10)
+    
+    # Step 8: Save results
     print("\n" + "=" * 60)
     print("[Step 7] Saving Results...")
     print("=" * 60)
@@ -154,11 +210,17 @@ def main():
         'Dataset': 'MovieLens 100K',
         'Train/Test Split': '80/20',
         'Models': {
-            'ALS': {
+            'ALS (implicit library)': {
                 'n_factors': 50,
                 'reg': 0.1,
                 'n_iter': 50,
                 **als_results
+            },
+            'ALS (from scratch)': {
+                'k': 50,
+                'lambda_reg': 0.1,
+                'iterations': 50,
+                **als_scratch_results
             },
             'SGD': {
                 'n_factors': 50,
@@ -176,9 +238,9 @@ def main():
     print("Pipeline Completed Successfully!")
     print("=" * 60)
     print("\nNext steps:")
-    print("  1. Check results/results.txt for detailed metrics")
+    print("  1. Check results/matrix_factorization_results.txt for detailed metrics")
     print("  2. Experiment with different hyperparameters")
-    print("  3. Try the educational ALS from scratch: python mf_als_from_scratch.py")
+    print("  3. Compare ALS from scratch vs SGD performance")
     print("=" * 60)
 
 
