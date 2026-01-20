@@ -1202,6 +1202,8 @@ score = p_u @ q_i
 
 #### Neural Methods
 - He, X., Liao, L., Zhang, H., Nie, L., Hu, X., & Chua, T.-S. (2017). "Neural Collaborative Filtering". *WWW 2017*. https://arxiv.org/abs/1708.05031
+- Strub, F., Mary, J., & Gaudel, R. (2016). "Hybrid Collaborative Filtering with Neural Networks". *RecSys 2016*. https://arxiv.org/abs/1603.00806
+- Nguyen, T., & Takasu, A. (2018). "NPE: Neural Personalized Embedding for Collaborative Filtering". *IJCAI 2018*. https://www.ijcai.org/proceedings/2018/0219.pdf
 - Guo, H., Tang, R., Ye, Y., Li, Z., & He, X. (2017). "DeepFM: A Factorization-Machine based Neural Network for CTR Prediction". *IJCAI 2017*. https://arxiv.org/abs/1703.04247
 
 #### LightFM
