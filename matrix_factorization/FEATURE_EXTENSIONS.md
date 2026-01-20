@@ -86,6 +86,45 @@ where:
 
 **Key Insight**: The interaction term $\langle \mathbf{v}_i, \mathbf{v}_j \rangle$ allows the model to learn how features interact (e.g., "young males prefer action movies").
 
+#### Matrix Formulation
+
+The FM equation can be reformulated using matrix operations for efficient computation. This reduces complexity from $O(n^2 k)$ to $O(kn)$.
+
+**Definitions**:
+- $\mathbf{w} \in \mathbb{R}^{n}$: linear weight vector
+- $\mathbf{V} \in \mathbb{R}^{n \times k}$: latent factor matrix where row $i$ is $\mathbf{v}_i$
+- $\mathbf{x} \in \mathbb{R}^{n}$: feature vector
+
+**Complete Matrix Form**:
+
+$$\boxed{\hat{y}(\mathbf{x}) = w_0 + \mathbf{w}^T\mathbf{x} + \frac{1}{2} \left[\|\mathbf{V}^T\mathbf{x}\|^2 - \|(\mathbf{V} \odot \mathbf{V})^T(\mathbf{x} \odot \mathbf{x})\|\right]}$$
+
+**Component Breakdown**:
+
+1. **Global bias**: $w_0$ (scalar)
+2. **Linear term**: $\mathbf{w}^T\mathbf{x} = \sum_{i=1}^n w_i x_i$ 
+3. **Interaction term**: $\frac{1}{2} \left[\|\mathbf{V}^T\mathbf{x}\|^2 - \|(\mathbf{V} \odot \mathbf{V})^T(\mathbf{x} \odot \mathbf{x})\|\right]$
+
+Where:
+- $\mathbf{V}^T\mathbf{x} \in \mathbb{R}^k$ is a k-dimensional vector
+- $\odot$ denotes element-wise (Hadamard) product
+- $\|\cdot\|^2$ is the squared L2 norm
+
+**Expanded Interaction Term**:
+
+$$\frac{1}{2} \sum_{f=1}^k \left[\left(\sum_{i=1}^n V_{if} x_i\right)^2 - \sum_{i=1}^n V_{if}^2 x_i^2\right]$$
+
+This expansion shows that for each latent dimension $f$, we:
+1. Compute the squared sum: $(\sum_{i} V_{if} x_i)^2$ (captures all pairwise interactions)
+2. Subtract self-interactions: $\sum_{i} V_{if}^2 x_i^2$ (removes diagonal terms)
+
+**Computational Complexity**:
+- **Naive implementation**: $O(n^2 k)$ operations
+- **Matrix form**: $O(kn)$ operations
+- **For sparse vectors**: $O(ks)$ where $s$ is the number of non-zero features
+
+**Why this matters**: For sparse feature vectors with only $s$ non-zero features (e.g., $s=10$ out of $n=10{,}000$), complexity becomes $O(ks)$ instead of $O(kn^2)$, making FMs practical for large-scale applications.
+
 #### Feature Vector Construction
 
 For a rating prediction scenario:
