@@ -341,19 +341,52 @@ R \approx P^T Q
 
 where $P \in \mathbb{R}^{k \times m}$ represents user factors and $Q \in \mathbb{R}^{k \times n}$ represents item factors, with $k \ll \min(m,n)$.
 
-Prediction: $\hat{r}_{ui} = p_u^T q_i$
+**Basic Prediction**: $\hat{r}_{ui} = p_u^T q_i$
+
+**With Bias Terms** (more accurate in practice): $\hat{r}_{ui} = \mu + b_u + b_i + p_u^T q_i$
 
 #### Singular Value Decomposition (SVD)
 
-Classical approach using matrix decomposition:
+Classical approach using matrix decomposition. SVD factorizes the rating matrix into three matrices:
+
+**Classical SVD (for complete matrices)**:
 
 ```math
 R = U\Sigma V^T
 ```
 
+**SVD with Bias Terms (practical recommender systems)**:
+
+```math
+\hat{r}_{ui} = \mu + b_u + b_i + U_{u,:} \Sigma V^T_{:,i}
+```
+
+where:
+- $R \in \mathbb{R}^{m \times n}$: Original user-item rating matrix (m users, n items)
+- $\mu$: Global mean rating
+- $b_u$: Bias for user $u$
+- $b_i$: Bias for item $i$
+- $U \in \mathbb{R}^{m \times k}$: Left singular vectors (user feature matrix)
+- $\Sigma \in \mathbb{R}^{k \times k}$: Diagonal matrix of singular values (strength of latent factors)
+- $V^T \in \mathbb{R}^{k \times n}$: Right singular vectors transposed (item feature matrix)
+- $k$: Number of latent factors (typically $k \ll \min(m, n)$)
+
+**Interpretation**:
+- Each row of $U$ represents a user in the $k$-dimensional latent space
+- Each column of $V^T$ represents an item in the $k$-dimensional latent space
+- The diagonal entries $\sigma_1, \sigma_2, ..., \sigma_k$ in $\Sigma$ (singular values) capture the importance of each latent factor
+- **Basic prediction**: $\hat{r} _{ui} = U _{u,:} \Sigma V^T _{:,i}$
+- **With biases**: $\hat{r} _{ui} = \mu + b_u + b_i + U _{u,:} \Sigma V^T _{:,i}$
+
+**Practical Approach**:
+1. Compute biases: $\mu$, $b_u$, $b_i$
+2. Center the data: $r'_{ui} = r_{ui} - \mu - b_u - b_i$
+3. Apply SVD to the centered residuals: $R' \approx U\Sigma V^T$
+4. Predictions combine biases and latent factors
+
 **Challenge**: SVD requires a complete matrix, but recommender data is sparse.
 
-**Solution**: Optimize only on observed ratings.
+**Solution**: Optimize only on observed ratings (leads to optimization-based approaches below).
 
 #### Optimization-Based Approach
 
@@ -397,6 +430,70 @@ def als_matrix_factorization(R, k, lambda_reg, iterations):
     
     return P, Q
 ```
+
+#### Bias Terms in Matrix Factorization
+
+In practice, incorporating bias terms significantly improves prediction accuracy by capturing systematic tendencies in the data.
+
+**Baseline Prediction Model**:
+
+```math
+\hat{r}_{ui} = \mu + b_u + b_i + p_u^T q_i
+```
+
+where:
+- $\mu$: Global mean rating (overall average across all ratings)
+- $b_u$: User bias (user $u$'s tendency to rate above/below average)
+- $b_i$: Item bias (item $i$'s tendency to be rated above/below average)
+- $p_u^T q_i$: User-item interaction (captures user preferences for specific item characteristics)
+
+**Motivation**:
+- **User Bias**: Some users are consistently generous (rate everything high), others are critical (rate everything low)
+- **Item Bias**: Some items are universally loved (high quality), others are universally disliked (poor quality)
+- **Interaction Term**: Captures the specific match between user preferences and item characteristics beyond these baseline effects
+
+**Example Interpretation**:
+```
+User Alice: b_Alice = +0.5 (rates 0.5 stars higher than average)
+Movie "The Godfather": b_Godfather = +1.2 (rated 1.2 stars higher than average)
+Global mean: μ = 3.5
+
+Baseline prediction: 3.5 + 0.5 + 1.2 = 5.2 stars
+Plus interaction term: 5.2 + p_Alice^T q_Godfather
+```
+
+**Loss Function with Bias Terms**:
+
+```math
+\mathcal{L} = \sum_{(u,i) \in \mathcal{O}} (r_{ui} - \mu - b_u - b_i - p_u^T q_i)^2 + \lambda(||p_u||^2 + ||q_i||^2 + b_u^2 + b_i^2)
+```
+
+**Optimization**: Can be learned via gradient descent or incorporated into ALS updates.
+
+**SGD Update Rules**:
+```math
+p_u \leftarrow p_u + \alpha(e_{ui} \cdot q_i - \lambda \cdot p_u)
+```
+
+```math
+q_i \leftarrow q_i + \alpha(e_{ui} \cdot p_u - \lambda \cdot q_i)
+```
+
+```math
+b_u \leftarrow b_u + \alpha(e_{ui} - \lambda \cdot b_u)
+```
+
+```math
+b_i \leftarrow b_i + \alpha(e_{ui} - \lambda \cdot b_i)
+```
+
+where $e_{ui} = r_{ui} - \hat{r}_{ui}$ is the prediction error, and $\alpha$ is the learning rate.
+
+**Benefits**:
+- Better captures rating patterns
+- Reduces error by 5-10% compared to basic MF
+- More interpretable (can identify "easy raters" vs "harsh critics")
+- Foundation for SVD++ and other advanced methods
 
 #### Probabilistic Matrix Factorization (PMF)
 
