@@ -222,15 +222,15 @@ if __name__ == "__main__":
     # Example usage
     import numpy as np
     from data_loader import load_movielens_100k, get_train_test_split
-    from mf_sgd import train_sgd_model
+    from mf_svd import train_svd_model
     
     print("Loading MovieLens 100K dataset...")
     data = load_movielens_100k()
     trainset, testset = get_train_test_split(data)
     
     # Train model
-    print("\nTraining SGD model...")
-    model = train_sgd_model(trainset, n_factors=50, n_epochs=20, verbose=False)
+    print("\nTraining SVD model...")
+    model = train_svd_model(trainset, n_factors=50, n_epochs=20, verbose=False)
     
     # Generate recommendations for a sample user
     sample_user = testset[0][0]

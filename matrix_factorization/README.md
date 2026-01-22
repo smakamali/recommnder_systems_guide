@@ -53,11 +53,11 @@ ALS alternates between:
 
 **Reference**: Guide lines 368-399
 
-### 2. Stochastic Gradient Descent (SGD)
+### 2. Singular Value Decomposition (SVD)
 
-SGD optimizes the same loss function using gradient descent:
-- Updates parameters for each training example
-- Requires learning rate tuning
+SVD optimizes the same loss function using Singular Value Decomposition:
+- Decomposes the rating matrix into lower-dimensional user and item factors
+- Uses gradient descent for optimization
 - More memory-efficient for very large datasets
 
 ## Installation
@@ -131,7 +131,7 @@ matrix_factorization/
 ├── environment.yml             # Conda environment file (recommended)
 ├── data_loader.py             # Load and preprocess MovieLens 100K
 ├── mf_als.py                  # ALS implementation (using implicit library)
-├── mf_sgd.py                  # SGD implementation
+├── mf_svd.py                  # SVD implementation
 ├── mf_als_from_scratch.py     # Educational ALS from scratch (NumPy)
 ├── evaluation.py              # Evaluation metrics (RMSE, MAE, etc.)
 ├── recommend.py               # Generate top-N recommendations
@@ -154,7 +154,7 @@ This will:
 2. Split into train/test (80/20)
 3. Train ALS model (using implicit library)
 4. Train ALS from scratch model (educational NumPy implementation)
-5. Train SGD model
+5. Train SVD model
 6. Evaluate all three models (RMSE, MAE, Precision@K, Recall@K, NDCG@K, Hit Rate@K)
 7. Generate sample recommendations
 8. Save results to `results/`
@@ -179,17 +179,17 @@ model = train_als_model(trainset, n_factors=50, reg=0.1, n_iter=50)
 prediction = model.predict(user_id="123", item_id="456")
 ```
 
-#### Train SGD Model
+#### Train SVD Model
 
 ```bash
-python mf_sgd.py
+python mf_svd.py
 ```
 
 Or use in code:
 ```python
-from mf_sgd import train_sgd_model
+from mf_svd import train_svd_model
 
-model = train_sgd_model(trainset, n_factors=50, n_epochs=20)
+model = train_svd_model(trainset, n_factors=50, n_epochs=20)
 predictions = model.test(testset)
 ```
 
@@ -253,7 +253,7 @@ See: [`../README.md`](../README.md) Section 1.3 - Evaluation Metrics (lines 104-
 - `reg=0.1`: Regularization parameter $\lambda$
 - `n_iter=50`: Number of ALS iterations
 
-**SGD Model** (`mf_sgd.py`):
+**SVD Model** (`mf_svd.py`):
 - `n_factors=50`: Number of latent factors $k$
 - `n_epochs=20`: Number of training epochs
 - `lr_all=0.005`: Learning rate
@@ -264,14 +264,14 @@ See: [`../README.md`](../README.md) Section 1.3 - Evaluation Metrics (lines 104-
 - **Increase `n_factors`**: Captures more complex patterns, but may overfit
 - **Increase `reg` (regularization)**: Reduces overfitting, but may underfit
 - **For ALS**: More iterations usually improve results (up to convergence)
-- **For SGD**: More epochs help, but watch for overfitting
+- **For SVD**: More epochs help, but watch for overfitting
 
 ## Results Interpretation
 
 After running `main.py`, check `results/matrix_factorization_results.txt` for:
 - RMSE and MAE (lower is better)
 - Precision@10, Recall@10, NDCG@10, and Hit Rate@10 (higher is better)
-- Comparison between all three models: ALS (implicit), ALS (from scratch), and SGD
+- Comparison between all three models: ALS (implicit), ALS (from scratch), and SVD
 
 **Typical Results** (MovieLens 100K):
 - RMSE: ~0.92-0.96
@@ -285,7 +285,7 @@ After running `main.py`, check `results/matrix_factorization_results.txt` for:
 
 - **`data_loader.py`**: Handles MovieLens dataset loading and train/test splitting
 - **`mf_als.py`**: ALS implementation using implicit library (efficient production-ready implementation)
-- **`mf_sgd.py`**: SGD implementation using Surprise's SVD class
+- **`mf_svd.py`**: SVD implementation using Surprise's SVD class
 - **`mf_als_from_scratch.py`**: Educational implementation following guide pseudocode exactly (NumPy only)
 - **`evaluation.py`**: Implements RMSE, MAE, Precision@K, Recall@K, NDCG@K, Hit Rate@K
 - **`recommend.py`**: Generates top-N recommendations with cold start handling
@@ -305,9 +305,9 @@ For production systems, consider:
 
 See: [`../README.md`](../README.md) Section 5.1 - Cold Start Problem (lines 1252-1316)
 
-## Comparison: ALS vs SGD
+## Comparison: ALS vs SVD
 
-| Aspect | ALS (implicit) | ALS (from scratch) | SGD |
+| Aspect | ALS (implicit) | ALS (from scratch) | SVD |
 |--------|----------------|-------------------|-----|
 | **Implementation** | Production library | Educational NumPy | Surprise SVD |
 | **Convergence** | Fast (few iterations) | Fast (few iterations) | Slower (more epochs needed) |
@@ -363,7 +363,7 @@ The Surprise library downloads MovieLens 100K automatically. If it fails:
 
 If running out of memory:
 - Reduce `n_factors` (e.g., from 50 to 20)
-- Use SGD instead of ALS
+- Use SVD instead of ALS
 - Process in smaller batches
 
 ### Poor Results

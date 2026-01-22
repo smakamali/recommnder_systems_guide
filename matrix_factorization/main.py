@@ -5,7 +5,7 @@ This script orchestrates the complete pipeline:
 1. Load MovieLens 100K data
 2. Split into train/test
 3. Train ALS model
-4. Train SGD model
+4. Train SVD model
 5. Evaluate both models (RMSE, MAE, Precision@K, Recall@K)
 6. Generate sample recommendations
 7. Print comparison results
@@ -20,7 +20,7 @@ from datetime import datetime
 # Import modules
 from data_loader import load_movielens_100k, get_train_test_split, get_dataset_stats
 from mf_als import train_als_model
-from mf_sgd import train_sgd_model
+from mf_svd import train_svd_model
 from mf_als_from_scratch import train_als_from_scratch_model
 from evaluation import evaluate_model
 from recommend import generate_top_n_recommendations, print_recommendations
@@ -103,11 +103,11 @@ def main():
         verbose=True
     )
     
-    # Step 5: Train SGD model
+    # Step 5: Train SVD model
     print("\n" + "=" * 60)
-    print("[Step 5] Training SGD Matrix Factorization...")
+    print("[Step 5] Training SVD Matrix Factorization...")
     print("=" * 60)
-    sgd_model = train_sgd_model(
+    svd_model = train_svd_model(
         trainset,
         n_factors=50,
         n_epochs=20,
@@ -137,9 +137,9 @@ def main():
     
     als_scratch_results = evaluate_model(als_scratch_predictions, k=10, threshold=4.0, verbose=True)
     
-    print("\nEvaluating SGD model...")
-    sgd_predictions = sgd_model.test(testset)
-    sgd_results = evaluate_model(sgd_predictions, k=10, threshold=4.0, verbose=True)
+    print("\nEvaluating SVD model...")
+    svd_predictions = svd_model.test(testset)
+    svd_results = evaluate_model(svd_predictions, k=10, threshold=4.0, verbose=True)
     
     # Compare all three models
     print("\n" + "=" * 60)
@@ -149,32 +149,32 @@ def main():
     print(f"\nRMSE:")
     print(f"  ALS (implicit):     {als_results['rmse']:.4f}")
     print(f"  ALS (from scratch): {als_scratch_results['rmse']:.4f}")
-    print(f"  SGD:                {sgd_results['rmse']:.4f}")
+    print(f"  SVD:                {svd_results['rmse']:.4f}")
     
     print(f"\nMAE:")
     print(f"  ALS (implicit):     {als_results['mae']:.4f}")
     print(f"  ALS (from scratch): {als_scratch_results['mae']:.4f}")
-    print(f"  SGD:                {sgd_results['mae']:.4f}")
+    print(f"  SVD:                {svd_results['mae']:.4f}")
     
     print(f"\nPrecision@10:")
     print(f"  ALS (implicit):     {als_results['precision@10']:.4f}")
     print(f"  ALS (from scratch): {als_scratch_results['precision@10']:.4f}")
-    print(f"  SGD:                {sgd_results['precision@10']:.4f}")
+    print(f"  SVD:                {svd_results['precision@10']:.4f}")
     
     print(f"\nRecall@10:")
     print(f"  ALS (implicit):     {als_results['recall@10']:.4f}")
     print(f"  ALS (from scratch): {als_scratch_results['recall@10']:.4f}")
-    print(f"  SGD:                {sgd_results['recall@10']:.4f}")
+    print(f"  SVD:                {svd_results['recall@10']:.4f}")
     
     print(f"\nNDCG@10:")
     print(f"  ALS (implicit):     {als_results['ndcg@10']:.4f}")
     print(f"  ALS (from scratch): {als_scratch_results['ndcg@10']:.4f}")
-    print(f"  SGD:                {sgd_results['ndcg@10']:.4f}")
+    print(f"  SVD:                {svd_results['ndcg@10']:.4f}")
     
     print(f"\nHit Rate@10:")
     print(f"  ALS (implicit):     {als_results['hit_rate@10']:.4f}")
     print(f"  ALS (from scratch): {als_scratch_results['hit_rate@10']:.4f}")
-    print(f"  SGD:                {sgd_results['hit_rate@10']:.4f}")
+    print(f"  SVD:                {svd_results['hit_rate@10']:.4f}")
     print("=" * 60)
     
     # Step 7: Generate sample recommendations
@@ -182,12 +182,12 @@ def main():
     print("[Step 7] Generating Sample Recommendations...")
     print("=" * 60)
     
-    # Use SGD model for recommendations (can switch to ALS)
+    # Use SVD model for recommendations (can switch to ALS)
     sample_user = testset[0][0]
-    print(f"\nGenerating top-10 recommendations for user {sample_user} (SGD model)...")
+    print(f"\nGenerating top-10 recommendations for user {sample_user} (SVD model)...")
     
     recommendations = generate_top_n_recommendations(
-        sgd_model, trainset, sample_user, n=10, exclude_rated=True
+        svd_model, trainset, sample_user, n=10, exclude_rated=True
     )
     
     print_recommendations(sample_user, recommendations, max_display=10)
@@ -227,12 +227,12 @@ def main():
                 'iterations': 50,
                 **als_scratch_results
             },
-            'SGD': {
+            'SVD': {
                 'n_factors': 50,
                 'n_epochs': 20,
                 'lr_all': 0.005,
                 'reg_all': 0.02,
-                **sgd_results
+                **svd_results
             }
         }
     }
@@ -245,7 +245,7 @@ def main():
     print("\nNext steps:")
     print("  1. Check results/matrix_factorization_results.txt for detailed metrics")
     print("  2. Experiment with different hyperparameters")
-    print("  3. Compare ALS from scratch vs SGD performance")
+    print("  3. Compare ALS from scratch vs SVD performance")
     print("=" * 60)
 
 

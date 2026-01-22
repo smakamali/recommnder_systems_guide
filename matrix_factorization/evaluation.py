@@ -327,12 +327,12 @@ def evaluate_model(predictions, k=10, threshold=4.0, verbose=True):
     return results
 
 
-def compare_sgd_als(sgd_model, als_model, testset):
+def compare_svd_als(svd_model, als_model, testset):
     """
-    Compare predictions from SGD and ALS models.
+    Compare predictions from SVD and ALS models.
     
     Args:
-        sgd_model: Trained SGD model
+        svd_model: Trained SVD model
         als_model: Trained ALS model
         testset: Test set for evaluation
         
@@ -340,14 +340,14 @@ def compare_sgd_als(sgd_model, als_model, testset):
         dict: Dictionary with comparison results
     """
     print("\n" + "=" * 60)
-    print("Model Comparison: SGD vs ALS")
+    print("Model Comparison: SVD vs ALS")
     print("=" * 60)
     
     # Get predictions from both models
-    sgd_predictions = sgd_model.test(testset)
+    svd_predictions = svd_model.test(testset)
     als_predictions = []
     
-    for pred in sgd_predictions:
+    for pred in svd_predictions:
         uid = pred.uid
         iid = pred.iid
         true_r = pred.r_ui
@@ -355,26 +355,26 @@ def compare_sgd_als(sgd_model, als_model, testset):
         als_predictions.append((uid, iid, true_r, als_pred_r))
     
     # Calculate metrics
-    sgd_rmse = calculate_rmse(sgd_predictions)
+    svd_rmse = calculate_rmse(svd_predictions)
     als_rmse = calculate_rmse(als_predictions)
     
-    sgd_mae = calculate_mae(sgd_predictions)
+    svd_mae = calculate_mae(svd_predictions)
     als_mae = calculate_mae(als_predictions)
     
     print(f"\nRMSE:")
-    print(f"  SGD: {sgd_rmse:.4f}")
+    print(f"  SVD: {svd_rmse:.4f}")
     print(f"  ALS: {als_rmse:.4f}")
-    print(f"  Difference: {abs(sgd_rmse - als_rmse):.4f}")
+    print(f"  Difference: {abs(svd_rmse - als_rmse):.4f}")
     
     print(f"\nMAE:")
-    print(f"  SGD: {sgd_mae:.4f}")
+    print(f"  SVD: {svd_mae:.4f}")
     print(f"  ALS: {als_mae:.4f}")
-    print(f"  Difference: {abs(sgd_mae - als_mae):.4f}")
+    print(f"  Difference: {abs(svd_mae - als_mae):.4f}")
     
     print("=" * 60)
     
     return {
-        'sgd': {'rmse': sgd_rmse, 'mae': sgd_mae},
+        'svd': {'rmse': svd_rmse, 'mae': svd_mae},
         'als': {'rmse': als_rmse, 'mae': als_mae}
     }
 
@@ -382,15 +382,15 @@ def compare_sgd_als(sgd_model, als_model, testset):
 if __name__ == "__main__":
     # Example usage
     from data_loader import load_movielens_100k, get_train_test_split
-    from mf_sgd import train_sgd_model
+    from mf_svd import train_svd_model
     
     print("Loading MovieLens 100K dataset...")
     data = load_movielens_100k()
     trainset, testset = get_train_test_split(data)
     
     # Train model
-    print("\nTraining SGD model...")
-    model = train_sgd_model(trainset, n_factors=50, n_epochs=20, verbose=False)
+    print("\nTraining SVD model...")
+    model = train_svd_model(trainset, n_factors=50, n_epochs=20, verbose=False)
     
     # Make predictions
     predictions = model.test(testset)
