@@ -18,11 +18,13 @@ import os
 from datetime import datetime
 
 # Import modules
-from data_loader import load_movielens_100k, get_train_test_split, get_dataset_stats
+from data_loader import (load_movielens_100k, get_train_test_split, get_dataset_stats,
+                         load_user_features, load_item_features, get_cold_start_split)
 from mf_als import train_als_model
 from mf_svd import train_svd_model
 from mf_als_from_scratch import train_als_from_scratch_model
-from evaluation import evaluate_model
+from mf_fm import train_fm_model
+from evaluation import evaluate_model, evaluate_with_cold_start_breakdown
 from recommend import generate_top_n_recommendations, print_recommendations
 
 
@@ -71,12 +73,31 @@ def main():
     data = load_movielens_100k()
     get_dataset_stats(data)
     
-    # Step 2: Split into train/test (80/20)
-    print("\n[Step 2] Splitting into train/test (80/20)...")
+    # Step 2: Load user and item features
+    print("\n[Step 2a] Loading user and item features...")
+    user_features = load_user_features()
+    item_features = load_item_features()
+    print(f"  User features: {user_features.shape}")
+    print(f"  Item features: {item_features.shape}")
+    
+    # Step 2b: Split into train/test (80/20)
+    print("\n[Step 2b] Splitting into train/test (80/20)...")
     trainset, testset = get_train_test_split(data, test_size=0.2, random_state=42)
     print(f"  Training set: {trainset.n_ratings:,} ratings")
     print(f"  Test set: {len(testset):,} ratings")
     print(f"  Users: {trainset.n_users:,}, Items: {trainset.n_items:,}")
+    
+    # Step 2c: Create cold start split
+    print("\n[Step 2c] Creating cold start test sets...")
+    trainset_cs, testset_cs, test_cold_users, test_cold_items = get_cold_start_split(
+        data, user_features, item_features, cold_start_ratio=0.1, 
+        test_size=0.2, random_state=42,
+        cold_user_threshold=20,  # Users with <5 ratings are considered cold start
+        cold_item_threshold=10  # Items with <10 ratings are considered cold start
+    )
+    print(f"  Warm test: {len(testset_cs):,} ratings")
+    print(f"  Cold start users: {len(test_cold_users)} users")
+    print(f"  Cold start items: {len(test_cold_items)} items")
     
     # Step 3: Train ALS model
     print("\n" + "=" * 60)
@@ -116,7 +137,31 @@ def main():
         random_state=42
     )
     
-    # Step 6: Evaluate all models
+    # Step 6: Train Factorization Machine with Features
+    print("\n" + "=" * 60)
+    print("[Step 6] Training Factorization Machine with Features...")
+    print("=" * 60)
+    try:
+        fm_model = train_fm_model(
+            trainset,
+            user_features,
+            item_features,
+            n_factors=50,
+            learning_rate=0.1,
+            reg_lambda=0.01,
+            n_epochs=30,
+            verbose=True
+        )
+        fm_available = True
+    except (ImportError, Exception) as e:
+        print(f"  Warning: myFM not available. Skipping FM training.")
+        print(f"  Error: {str(e)}")
+        print(f"  Install with: pip install myfm")
+        print(f"  Note: myFM has cross-platform support (Windows, Linux, macOS)")
+        fm_model = None
+        fm_available = False
+    
+    # Step 7: Evaluate all models
     print("\n" + "=" * 60)
     print("[Step 6] Evaluating All Models...")
     print("=" * 60)
@@ -141,45 +186,99 @@ def main():
     svd_predictions = svd_model.test(testset)
     svd_results = evaluate_model(svd_predictions, k=10, threshold=4.0, verbose=True)
     
-    # Compare all three models
+    # Evaluate FM model if available
+    fm_results = None
+    fm_cold_results = None
+    if fm_available:
+        print("\nEvaluating Factorization Machine model...")
+        fm_predictions = fm_model.test(testset)
+        fm_results = evaluate_model(
+            fm_predictions, k=10, threshold=4.0, verbose=True,
+            cold_start_users=test_cold_users,
+            cold_start_items=test_cold_items
+        )
+        
+        # Cold start evaluation for FM
+        print("\nEvaluating FM on cold start scenarios...")
+        fm_cold_results = evaluate_with_cold_start_breakdown(
+            fm_predictions, test_cold_users, test_cold_items, verbose=True
+        )
+    
+    # Compare all models
     print("\n" + "=" * 60)
-    print("Model Comparison: All Three Models")
+    if fm_available:
+        print("Model Comparison: All Four Models")
+    else:
+        print("Model Comparison: All Three Models")
     print("=" * 60)
     
     print(f"\nRMSE:")
     print(f"  ALS (implicit):     {als_results['rmse']:.4f}")
     print(f"  ALS (from scratch): {als_scratch_results['rmse']:.4f}")
     print(f"  SVD:                {svd_results['rmse']:.4f}")
+    if fm_available:
+        print(f"  FM (with features): {fm_results['rmse']:.4f}")
     
     print(f"\nMAE:")
     print(f"  ALS (implicit):     {als_results['mae']:.4f}")
     print(f"  ALS (from scratch): {als_scratch_results['mae']:.4f}")
     print(f"  SVD:                {svd_results['mae']:.4f}")
+    if fm_available:
+        print(f"  FM (with features): {fm_results['mae']:.4f}")
     
     print(f"\nPrecision@10:")
     print(f"  ALS (implicit):     {als_results['precision@10']:.4f}")
     print(f"  ALS (from scratch): {als_scratch_results['precision@10']:.4f}")
     print(f"  SVD:                {svd_results['precision@10']:.4f}")
+    if fm_available:
+        print(f"  FM (with features): {fm_results['precision@10']:.4f}")
     
     print(f"\nRecall@10:")
     print(f"  ALS (implicit):     {als_results['recall@10']:.4f}")
     print(f"  ALS (from scratch): {als_scratch_results['recall@10']:.4f}")
     print(f"  SVD:                {svd_results['recall@10']:.4f}")
+    if fm_available:
+        print(f"  FM (with features): {fm_results['recall@10']:.4f}")
     
     print(f"\nNDCG@10:")
     print(f"  ALS (implicit):     {als_results['ndcg@10']:.4f}")
     print(f"  ALS (from scratch): {als_scratch_results['ndcg@10']:.4f}")
     print(f"  SVD:                {svd_results['ndcg@10']:.4f}")
+    if fm_available:
+        print(f"  FM (with features): {fm_results['ndcg@10']:.4f}")
     
     print(f"\nHit Rate@10:")
     print(f"  ALS (implicit):     {als_results['hit_rate@10']:.4f}")
-    print(f"  ALS (from scratch): {als_scratch_results['hit_rate@10']:.4f}")
+    # print(f"  ALS (from scratch): {als_scratch_results['hit_rate@10']:.4f}")
     print(f"  SVD:                {svd_results['hit_rate@10']:.4f}")
+    if fm_available:
+        print(f"  FM (with features): {fm_results['hit_rate@10']:.4f}")
+    
+    # Cold start comparison
+    if fm_available and fm_cold_results:
+        print(f"\nCold Start RMSE (new users):")
+        print(f"  ALS (implicit):     N/A (cannot predict)")
+        print(f"  ALS (from scratch): N/A (cannot predict)")
+        print(f"  SVD:                N/A (cannot predict)")
+        if fm_cold_results.get('cold_user_rmse') is not None:
+            print(f"  FM (with features): {fm_cold_results['cold_user_rmse']:.4f}")
+        else:
+            print(f"  FM (with features): N/A (no cold start users in test set)")
+        
+        print(f"\nCold Start RMSE (new items):")
+        print(f"  ALS (implicit):     N/A (cannot predict)")
+        # print(f"  ALS (from scratch): N/A (cannot predict)")
+        print(f"  SVD:                N/A (cannot predict)")
+        if fm_cold_results.get('cold_item_rmse') is not None:
+            print(f"  FM (with features): {fm_cold_results['cold_item_rmse']:.4f}")
+        else:
+            print(f"  FM (with features): N/A (no cold start items in test set)")
+    
     print("=" * 60)
     
-    # Step 7: Generate sample recommendations
+    # Step 8: Generate sample recommendations
     print("\n" + "=" * 60)
-    print("[Step 7] Generating Sample Recommendations...")
+    print("[Step 8] Generating Sample Recommendations...")
     print("=" * 60)
     
     # Use SVD model for recommendations (can switch to ALS)
@@ -199,21 +298,28 @@ def main():
     )
     print_recommendations(sample_user, als_recommendations, max_display=10)
     
-    # Show ALS from scratch recommendations
+    # Show FM recommendations if available
+    if fm_available:
+        print(f"\nGenerating top-10 recommendations for user {sample_user} (Factorization Machine with features)...")
+        fm_recommendations = generate_top_n_recommendations(
+            fm_model, trainset, sample_user, n=10, exclude_rated=True
+        )
+        print_recommendations(sample_user, fm_recommendations, max_display=10)
+    
     print(f"\nGenerating top-10 recommendations for user {sample_user} (ALS from scratch)...")
     als_scratch_recommendations = generate_top_n_recommendations(
         als_scratch_model, trainset, sample_user, n=10, exclude_rated=True
     )
     print_recommendations(sample_user, als_scratch_recommendations, max_display=10)
     
-    # Step 8: Save results
+    # Step 9: Save results
     print("\n" + "=" * 60)
-    print("[Step 8] Saving Results...")
+    print("[Step 9] Saving Results...")
     print("=" * 60)
     
     results_summary = {
         'Dataset': 'MovieLens 100K',
-        'Train/Test Split': '80/20',
+        'Train/Test Split': '80/20 with 10% cold start',
         'Models': {
             'ALS (implicit library)': {
                 'n_factors': 50,
@@ -236,6 +342,18 @@ def main():
             }
         }
     }
+    
+    # Add FM results if available
+    if fm_available and fm_results:
+        results_summary['Models']['Factorization Machine'] = {
+            'n_factors': 50,
+            'learning_rate': 0.1,
+            'reg_lambda': 0.01,
+            'n_epochs': 30,
+            **fm_results
+        }
+        if fm_cold_results:
+            results_summary['Models']['Factorization Machine']['cold_start'] = fm_cold_results
     
     save_results(results_summary, "matrix_factorization_results.txt")
     

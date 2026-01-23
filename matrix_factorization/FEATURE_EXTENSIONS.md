@@ -166,29 +166,30 @@ Optimization via SGD or ALS. Complexity: $O(k \cdot n)$ per prediction (linear i
 #### Implementation
 
 ```python
-# Using libFM or xLearn
-from xlearn import FFMModel
+# Using myFM (Bayesian Factorization Machines)
+import myfm
+import scipy.sparse as sp
 
 # Create FM model
-fm = FFMModel(
-    task='reg',           # Regression task
-    metric='rmse',
-    lr=0.1,
-    k=10,                 # Latent factor dimension
-    reg_lambda=0.01
+fm = myfm.MyFMRegressor(
+    rank=10,              # Latent factor dimension
+    random_seed=42
 )
 
-# Train (data in libsvm format with field information)
-fm.fit(train_data, eval_data)
+# Train (data as sparse matrices)
+# X_train: scipy.sparse matrix of features
+# y_train: numpy array of ratings
+fm.fit(X_train, y_train, n_iter=30, n_kept_samples=30)
 
 # Predict
-predictions = fm.predict(test_data)
+predictions = fm.predict(X_test)
 ```
 
 **Libraries**:
-- `xLearn`: Fast C++ implementation with Python bindings
+- `myFM`: Bayesian Factorization Machines with cross-platform support (Windows, Linux, macOS)
 - `libFM`: Original implementation by Steffen Rendle
 - `fastFM`: Python/Cython implementation
+- `xLearn`: Fast C++ implementation (limited Windows support for Python 3.8+)
 
 ---
 
@@ -1251,12 +1252,15 @@ score = p_u @ q_i
 ### Software Libraries
 
 #### Factorization Machines
-- **xLearn**: https://github.com/aksnzhy/xlearn
-  - Fast C++ implementation with Python bindings
-  - Supports FM, FFM, Linear models
+- **myFM**: https://myfm.readthedocs.io/
+  - Bayesian Factorization Machines with cross-platform support
+  - Supports regression and classification
+  - Works on Windows, Linux, and macOS
 - **libFM**: http://www.libfm.org/
   - Original implementation by Steffen Rendle
 - **fastFM**: https://github.com/ibayer/fastFM
+- **xLearn**: https://github.com/aksnzhy/xlearn
+  - Fast C++ implementation (limited Windows support for Python 3.8+)
   - Python/Cython implementation
 
 #### LightFM
