@@ -7,6 +7,9 @@ This module implements the ALS algorithm directly from the guide's pseudocode
 This implementation helps understand the core mathematics behind ALS without
 the abstraction of libraries.
 
+Note: Uses np.linalg.lstsq instead of np.linalg.solve to avoid performance
+issues with NumPy 1.26.x (see ALS_FROM_SCRATCH_FREEZE_ISSUE.md).
+
 Reference: Guide Section 2.3 - Matrix Factorization, ALS Algorithm (lines 370-399)
 Loss Function: L = sum((r_ui - p_u^T q_i)^2) + λ(||p_u||^2 + ||q_i||^2)
 """
@@ -82,11 +85,12 @@ def als_matrix_factorization(trainset, k=50, lambda_reg=0.1, iterations=50,
             Q_u = Q[:, rated_items]
             
             # Solve: (Q_u @ Q_u^T + λI) * p_u = Q_u @ r_u (guide lines 383-386)
+            # Using lstsq instead of solve to avoid NumPy 1.26.x performance issues
             # This is the closed-form solution for p_u when Q is fixed
-            P[:, u] = np.linalg.solve(
-                Q_u @ Q_u.T + lambda_reg * np.eye(k),
-                Q_u @ r_u
-            )
+            A = Q_u @ Q_u.T + lambda_reg * np.eye(k)
+            b = Q_u @ r_u
+            x, _, _, _ = np.linalg.lstsq(A, b, rcond=None)
+            P[:, u] = x.ravel()
         
         # Fix P, optimize Q (guide lines 388-396)
         for i in range(num_items):
@@ -101,11 +105,12 @@ def als_matrix_factorization(trainset, k=50, lambda_reg=0.1, iterations=50,
             P_i = P[:, users_rated]
             
             # Solve: (P_i @ P_i^T + λI) * q_i = P_i @ r_i (guide lines 393-396)
+            # Using lstsq instead of solve to avoid NumPy 1.26.x performance issues
             # This is the closed-form solution for q_i when P is fixed
-            Q[:, i] = np.linalg.solve(
-                P_i @ P_i.T + lambda_reg * np.eye(k),
-                P_i @ r_i
-            )
+            A = P_i @ P_i.T + lambda_reg * np.eye(k)
+            b = P_i @ r_i
+            x, _, _, _ = np.linalg.lstsq(A, b, rcond=None)
+            Q[:, i] = x.ravel()
         
         if verbose and (iteration + 1) % 10 == 0:
             # Calculate current loss for monitoring

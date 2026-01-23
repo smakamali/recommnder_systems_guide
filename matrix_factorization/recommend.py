@@ -166,14 +166,83 @@ def get_item_names_movielens(trainset):
     return item_names
 
 
-def handle_cold_start_user(model, trainset, user_id, n=10, verbose=False):
+def generate_recommendations_with_features(fm_model, user_id, user_features, 
+                                           item_features, trainset, n=10, 
+                                           exclude_rated=True, verbose=False):
     """
-    Handle recommendations for a cold start user (not in training set).
+    Generate recommendations using FM with feature support.
     
-    Strategies:
-    1. Use global mean or popular items
-    2. Use demographic-based recommendations (if available)
-    3. Random sampling
+    Works for both warm and cold start users (as long as features available).
+    
+    Args:
+        fm_model: Trained FMRecommender model
+        user_id: User ID (string)
+        user_features: DataFrame with user features (must contain user_id)
+        item_features: DataFrame with item features
+        trainset: Surprise Trainset object
+        n (int): Number of recommendations (default: 10)
+        exclude_rated (bool): Exclude items user has already rated (default: True)
+        verbose (bool): Print details (default: False)
+        
+    Returns:
+        list: List of (item_id, predicted_rating) tuples
+    """
+    # Get user's feature row
+    user_row = user_features[user_features['user_id'] == str(user_id)]
+    if len(user_row) == 0:
+        if verbose:
+            print(f"  Warning: User {user_id} not found in user_features")
+        return []
+    
+    # Get items to predict for
+    if exclude_rated:
+        try:
+            inner_uid = trainset.to_inner_uid(user_id)
+            rated_items = set()
+            for inner_iid, rating in trainset.ur[inner_uid]:
+                raw_iid = trainset.to_raw_iid(inner_iid)
+                rated_items.add(raw_iid)
+        except ValueError:
+            # User not in training set (cold start) - no rated items
+            rated_items = set()
+    else:
+        rated_items = set()
+    
+    # Get all items
+    all_items = set()
+    for inner_iid in range(trainset.n_items):
+        raw_iid = trainset.to_raw_iid(inner_iid)
+        all_items.add(raw_iid)
+    
+    # Candidate items
+    candidate_items = all_items - rated_items
+    
+    # Predict ratings for all candidate items
+    predictions = []
+    for item_id in candidate_items:
+        try:
+            pred_rating = fm_model.predict(str(user_id), str(item_id))
+            predictions.append((item_id, pred_rating))
+        except Exception as e:
+            if verbose:
+                print(f"  Warning: Could not predict for item {item_id}: {e}")
+            continue
+    
+    # Sort by predicted rating (descending) and take top-N
+    predictions_sorted = sorted(predictions, key=lambda x: x[1], reverse=True)
+    top_n = predictions_sorted[:n]
+    
+    return top_n
+
+
+def handle_cold_start_user(model, trainset, user_id, n=10, verbose=False,
+                           fm_model=None, user_features=None, item_features=None):
+    """
+    Enhanced cold start handling.
+    
+    Priority:
+    1. If FM model + features available: Use feature-based prediction
+    2. Else: Fall back to popularity-based recommendation
     
     Args:
         model: Trained model (may not work for cold start users)
@@ -181,6 +250,9 @@ def handle_cold_start_user(model, trainset, user_id, n=10, verbose=False):
         user_id: Raw user id (not in training set)
         n (int): Number of recommendations (default: 10)
         verbose (bool): Print details (default: False)
+        fm_model: Optional FMRecommender model (default: None)
+        user_features: Optional DataFrame with user features (default: None)
+        item_features: Optional DataFrame with item features (default: None)
         
     Returns:
         list: List of (item_id, predicted_rating) tuples
@@ -195,8 +267,20 @@ def handle_cold_start_user(model, trainset, user_id, n=10, verbose=False):
         if verbose:
             print(f"  Cold start detected for user {user_id}")
         
-        # Strategy: Recommend most popular items (by average rating)
-        # Get all items and their average ratings
+        # Try FM model with features first
+        if fm_model is not None and user_features is not None and item_features is not None:
+            if verbose:
+                print(f"  Using FM model with features for cold start user")
+            try:
+                return generate_recommendations_with_features(
+                    fm_model, user_id, user_features, item_features, 
+                    trainset, n=n, exclude_rated=True, verbose=verbose
+                )
+            except Exception as e:
+                if verbose:
+                    print(f"  FM prediction failed: {e}, falling back to popularity")
+        
+        # Fallback: Recommend most popular items (by average rating)
         item_ratings = defaultdict(list)
         
         for uid, iid, rating in trainset.all_ratings():
