@@ -694,7 +694,7 @@ def compare_svd_als(svd_model, als_model, testset):
 if __name__ == "__main__":
     # Example usage
     from common.data_loader import load_movielens_100k, get_train_test_split
-    from mf_svd import train_svd_model
+    from matrix_factorization.mf_svd import train_svd_model
     
     print("Loading MovieLens 100K dataset...")
     data = load_movielens_100k()
@@ -709,4 +709,3 @@ if __name__ == "__main__":
     
     # Evaluate
     results = evaluate_model(predictions, k=10, threshold=4.0)
-

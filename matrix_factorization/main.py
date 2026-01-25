@@ -18,13 +18,13 @@ import os
 from datetime import datetime
 
 # Import modules
-from data_loader import (load_movielens_100k, get_train_test_split, get_dataset_stats,
+from common.data_loader import (load_movielens_100k, get_train_test_split, get_dataset_stats,
                          load_user_features, load_item_features, get_cold_start_split)
 from mf_als import train_als_model
 from mf_svd import train_svd_model
 from mf_als_from_scratch import train_als_from_scratch_model
 from mf_fm import train_fm_model
-from evaluation import evaluate_model, evaluate_with_cold_start_breakdown
+from common.evaluation import evaluate_model, evaluate_with_cold_start_breakdown
 from recommend import generate_top_n_recommendations, print_recommendations
 
 

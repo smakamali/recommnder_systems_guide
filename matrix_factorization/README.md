@@ -25,7 +25,7 @@ For detailed theory, see: [`../README.md`](../README.md) Section 2.3 - Matrix Fa
 
 The basic MF approach uses only user-item ratings. For methods that incorporate **side information** (user features like age/gender, item features like genre/year) to improve predictions and handle cold start, see:
 
-📚 **[FEATURE_EXTENSIONS.md](FEATURE_EXTENSIONS.md)** - Comprehensive guide to extending matrix factorization with features
+📚 **[feature_extensions.md](feature_extensions.md)** - Comprehensive guide to extending matrix factorization with features
 
 This document covers 7 approaches including Factorization Machines, Hybrid MF, LightFM, and Neural CF with features.
 
@@ -80,7 +80,7 @@ $$\hat{y}(\mathbf{x}) = w_0 + \sum_{i=1}^n w_i x_i + \sum_{i=1}^n \sum_{j=i+1}^n
 - Models feature interactions (e.g., "young males prefer action")
 - Generalizable to any feature set
 
-**Reference**: [FEATURE_EXTENSIONS.md](FEATURE_EXTENSIONS.md) lines 70-193
+**Reference**: [feature_extensions.md](feature_extensions.md) lines 70-193
 
 ## Installation
 
@@ -150,7 +150,7 @@ The dataset is automatically downloaded on first use via the Surprise library.
 ```
 matrix_factorization/
 ├── README.md                   # This file
-├── FEATURE_EXTENSIONS.md       # Guide to extending MF with user/item features
+├── feature_extensions.md       # Guide to extending MF with user/item features
 ├── environment.yml             # Conda environment file (recommended)
 ├── data_loader.py             # Load and preprocess MovieLens 100K (extended with features)
 ├── mf_als.py                  # ALS implementation (using implicit library)
@@ -422,7 +422,7 @@ Each training example (rating) represented as:
 
 **Total**: ~2,669 features (sparse representation)
 
-See [FEATURE_EXTENSIONS.md](FEATURE_EXTENSIONS.md) for detailed feature engineering guidelines.
+See [feature_extensions.md](feature_extensions.md) for detailed feature engineering guidelines.
 
 ## Next Steps
 
@@ -430,7 +430,7 @@ See [FEATURE_EXTENSIONS.md](FEATURE_EXTENSIONS.md) for detailed feature engineer
 2. **Try larger datasets**: MovieLens 1M, 10M, or 25M
 3. **Compare with other methods**: Collaborative filtering, content-based, neural networks
 4. **Explore extensions**: 
-   - **Incorporating features**: See [FEATURE_EXTENSIONS.md](FEATURE_EXTENSIONS.md) for 7 approaches to extend MF with user/item features
+   - **Incorporating features**: See [feature_extensions.md](feature_extensions.md) for 7 approaches to extend MF with user/item features
    - **Advanced models**: SVD++, TimeSVD++, Feature-Rich SVD++
    - **Hybrid systems**: See [../hybrid_recommendation/](../hybrid_recommendation/) for combining CF and content-based methods
 
@@ -439,7 +439,7 @@ See [FEATURE_EXTENSIONS.md](FEATURE_EXTENSIONS.md) for detailed feature engineer
 - **Guide Section 2.3**: Matrix Factorization (lines 330-419)
 - **Guide Section 1.3**: Evaluation Metrics (lines 104-160)
 - **Guide Section 5.1**: Cold Start Problem (lines 1252-1316)
-- **Feature Extensions**: [FEATURE_EXTENSIONS.md](FEATURE_EXTENSIONS.md) - Incorporating user/item features into MF
+- **Feature Extensions**: [feature_extensions.md](feature_extensions.md) - Incorporating user/item features into MF
 
 Main guide: [`../README.md`](../README.md)
 

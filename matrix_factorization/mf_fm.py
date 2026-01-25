@@ -4,7 +4,7 @@ Factorization Machines for Feature-Rich Recommendation.
 Implements FM using myFM library with support for user and item features.
 Handles feature engineering, training, prediction, and evaluation.
 
-Reference: FEATURE_EXTENSIONS.md lines 70-193
+Reference: feature_extensions.md lines 70-193
 """
 
 import os
@@ -271,7 +271,7 @@ def train_fm_model(trainset, user_features, item_features,
     Returns:
         FMRecommender: Trained FM recommender
     """
-    from data_loader import FeaturePreprocessor
+    from common.data_loader import FeaturePreprocessor
     
     if verbose:
         print("Preprocessing features...")
@@ -303,7 +303,7 @@ def train_fm_model(trainset, user_features, item_features,
 
 if __name__ == "__main__":
     # Example usage
-    from data_loader import (load_movielens_100k, get_train_test_split,
+    from common.data_loader import (load_movielens_100k, get_train_test_split,
                              load_user_features, load_item_features)
     
     print("Loading MovieLens 100K dataset...")

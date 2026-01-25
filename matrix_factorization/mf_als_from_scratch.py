@@ -15,7 +15,7 @@ Loss Function: L = sum((r_ui - p_u^T q_i)^2) + λ(||p_u||^2 + ||q_i||^2)
 """
 
 import numpy as np
-from data_loader import load_movielens_100k, get_train_test_split
+from common.data_loader import load_movielens_100k, get_train_test_split
 
 
 def als_matrix_factorization(trainset, k=50, lambda_reg=0.1, iterations=50, 
