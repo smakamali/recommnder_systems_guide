@@ -2191,6 +2191,115 @@ workflow.fit_transform(dataset).to_parquet(output_path)
 
 ---
 
+## 6.5. Comprehensive Comparison Matrix
+
+This detailed comparison matrix evaluates major recommender system approaches across multiple dimensions to help guide selection based on specific requirements.
+
+| Approach | **Data Requirements** | **Scalability** | **Cold Start** | **Interpretability** | **Training Time** | **Inference Speed** | **Accuracy** | **Sequential Modeling** | **Diversity Support** | **Bias Handling** | **Feature Engineering** | **Hardware Needs** | **Update Frequency** | **Production Maturity** |
+|----------|----------------------|-----------------|----------------|---------------------|-------------------|---------------------|--------------|------------------------|---------------------|------------------|------------------------|-------------------|---------------------|----------------------|
+| **User-Based CF** | User-item interactions | ⭐⭐⭐ | ⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐ | ⭐ | ⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ |
+| **Item-Based CF** | User-item interactions | ⭐⭐⭐⭐ | ⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐ | ⭐ | ⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ |
+| **Content-Based** | Item features/metadata | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐ | ⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ |
+| **Matrix Factorization (ALS/SVD)** | User-item interactions | ⭐⭐⭐⭐⭐ | ⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐ | ⭐ | ⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐⭐ |
+| **Hybrid Methods** | Mixed (interactions + features) | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ |
+| **Neural CF (NCF/NeuMF)** | User-item interactions | ⭐⭐⭐⭐ | ⭐ | ⭐ | ⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐ | ⭐ | ⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐ |
+| **AutoRec** | User-item interactions | ⭐⭐⭐⭐ | ⭐ | ⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐ | ⭐ | ⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐ |
+| **VAE (Mult-VAE)** | User-item interactions | ⭐⭐⭐⭐ | ⭐ | ⭐ | ⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐ | ⭐⭐⭐ |
+| **GRU4Rec** | Sequential interactions | ⭐⭐⭐ | ⭐ | ⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐ | ⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐ |
+| **BERT4Rec** | Sequential interactions | ⭐⭐⭐ | ⭐ | ⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐ | ⭐⭐⭐ |
+| **SASRec** | Sequential interactions | ⭐⭐⭐ | ⭐ | ⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐ | ⭐⭐⭐ |
+| **LightGCN** | User-item graph | ⭐⭐⭐⭐ | ⭐ | ⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐ |
+| **PinSage** | User-item graph | ⭐⭐⭐⭐⭐ | ⭐ | ⭐ | ⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐⭐ |
+| **LLM-Based (P5/TALLRec)** | Text descriptions + interactions | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐ | ⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐ | ⭐ | ⭐⭐ | ⭐ |
+| **RL (DQN)** | Interaction feedback | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐ | ⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐ | ⭐ |
+| **Contextual Bandits** | Context + feedback | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ |
+
+### Legend & Rating Scale
+
+**Rating System**: ⭐ = 1 star (Poor/Low), ⭐⭐ = 2 stars, ⭐⭐⭐ = 3 stars (Moderate), ⭐⭐⭐⭐ = 4 stars (Good), ⭐⭐⭐⭐⭐ = 5 stars (Excellent/High)
+
+**Data Requirements**: Type and amount of data needed (descriptive text)
+
+**Scalability**: 
+- ⭐ (1 star): Thousands of users/items
+- ⭐⭐⭐ (3 stars): Millions
+- ⭐⭐⭐⭐ (4 stars): Tens of millions
+- ⭐⭐⭐⭐⭐ (5 stars): Billions
+
+**Cold Start**: 
+- ⭐ (1 star): Cannot handle new users/items
+- ⭐⭐⭐ (3 stars): Some capability with workarounds
+- ⭐⭐⭐⭐ (4 stars): Handles one type well (users or items)
+- ⭐⭐⭐⭐⭐ (5 stars): Handles both well
+
+**Interpretability**: 
+- ⭐ (1 star): Black box, difficult to explain
+- ⭐⭐⭐ (3 stars): Some interpretability (attention weights, feature importance)
+- ⭐⭐⭐⭐⭐ (5 stars): Clear explanations possible
+
+**Training Time** (more stars = faster training): 
+- ⭐ (1 star): Very slow (weeks)
+- ⭐⭐ (2 stars): Slow (days)
+- ⭐⭐⭐ (3 stars): Moderate (1-24 hours)
+- ⭐⭐⭐⭐⭐ (5 stars): Fast (<1 hour)
+
+**Inference Speed** (more stars = faster inference): 
+- ⭐ (1 star): Slow (>100ms)
+- ⭐⭐⭐ (3 stars): Moderate (10-100ms)
+- ⭐⭐⭐⭐⭐ (5 stars): Fast (<10ms)
+
+**Accuracy**: 
+- ⭐⭐⭐ (3 stars): Moderate performance
+- ⭐⭐⭐⭐ (4 stars): Moderate-High performance
+- ⭐⭐⭐⭐⭐ (5 stars): High performance
+
+**Sequential Modeling**: 
+- ⭐ (1 star): No sequential modeling capability
+- ⭐⭐⭐⭐ (4 stars): Limited sequential modeling (short-term)
+- ⭐⭐⭐⭐⭐ (5 stars): Full sequential modeling capability
+
+**Diversity Support**: 
+- ⭐ (1 star): No built-in diversity mechanisms
+- ⭐⭐⭐ (3 stars): Can add diversity post-processing
+- ⭐⭐⭐⭐⭐ (5 stars): Built-in diversity optimization
+
+**Bias Handling**: 
+- ⭐ (1 star): Amplifies biases
+- ⭐⭐⭐ (3 stars): Some debiasing possible
+- ⭐⭐⭐⭐⭐ (5 stars): Built-in debiasing mechanisms
+
+**Feature Engineering** (more stars = less engineering needed): 
+- ⭐ (1 star): Requires extensive feature engineering
+- ⭐⭐⭐ (3 stars): Benefits from features
+- ⭐⭐⭐⭐⭐ (5 stars): Works with IDs only (minimal engineering)
+
+**Hardware Needs** (more stars = less demanding): 
+- ⭐ (1 star): GPU/TPU required
+- ⭐⭐ (2 stars): GPU required
+- ⭐⭐⭐ (3 stars): GPU preferred
+- ⭐⭐⭐⭐⭐ (5 stars): CPU only
+
+**Update Frequency** (more stars = more frequent updates possible): 
+- ⭐⭐ (2 stars): Batch updates (periodic retraining)
+- ⭐⭐⭐ (3 stars): Online/Batch (streaming + periodic)
+- ⭐⭐⭐⭐ (4 stars): Online updates (streaming data)
+- ⭐⭐⭐⭐⭐ (5 stars): Real-time updates (immediate)
+
+**Production Maturity**: 
+- ⭐ (1 star): Research stage, limited tooling
+- ⭐⭐⭐ (3 stars): Some production use, growing tooling
+- ⭐⭐⭐⭐⭐ (5 stars): Widely used, mature tooling
+
+### Usage Notes
+
+- Ratings are relative and context-dependent
+- Actual performance depends on dataset characteristics, implementation quality, and hyperparameter tuning
+- Many production systems combine multiple approaches (e.g., MF for candidates + DNN for ranking)
+- Consider your specific constraints (latency, compute budget, data availability) when selecting approaches
+- This matrix provides a starting point; detailed evaluation on your specific dataset is recommended
+
+---
+
 ## 7. Future Directions & Conclusion
 
 ### Emerging Trends
