@@ -15,7 +15,7 @@ import scipy.sparse as sp
 from unittest.mock import patch, MagicMock, Mock
 
 from mf_fm import FactorizationMachineModel, FMRecommender
-from data_loader import FeaturePreprocessor
+from common.data_loader import FeaturePreprocessor
 
 myfm = pytest.importorskip('myfm', reason='myFM library required for FM tests')
 

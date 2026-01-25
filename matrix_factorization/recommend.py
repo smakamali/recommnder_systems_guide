@@ -304,8 +304,11 @@ def handle_cold_start_user(model, trainset, user_id, n=10, verbose=False,
 
 if __name__ == "__main__":
     # Example usage
+    import sys
+    from pathlib import Path
+    sys.path.insert(0, str(Path(__file__).parent.parent))
     import numpy as np
-    from data_loader import load_movielens_100k, get_train_test_split
+    from common.data_loader import load_movielens_100k, get_train_test_split
     from mf_svd import train_svd_model
     
     print("Loading MovieLens 100K dataset...")

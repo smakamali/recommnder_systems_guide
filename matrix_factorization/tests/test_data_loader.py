@@ -16,7 +16,7 @@ import tempfile
 import shutil
 from unittest.mock import patch
 
-from data_loader import (
+from common.data_loader import (
     load_user_features,
     load_item_features,
     FeaturePreprocessor,
@@ -53,7 +53,7 @@ class TestLoadUserFeatures:
         """Test that load_user_features returns a pandas DataFrame."""
         u_user = Path(temp_data_dir) / "u.user"
         _write_u_user(u_user, sample_user_features)
-        with patch('data_loader.get_movielens_data_path', return_value=temp_data_dir):
+        with patch('common.data_loader.get_movielens_data_path', return_value=temp_data_dir):
             result = load_user_features()
         assert isinstance(result, pd.DataFrame)
         assert len(result) == len(sample_user_features)
@@ -82,7 +82,7 @@ class TestLoadItemFeatures:
         """Test that load_item_features returns a pandas DataFrame."""
         u_item = Path(temp_data_dir) / "u.item"
         _write_u_item(u_item, sample_item_features)
-        with patch('data_loader.get_movielens_data_path', return_value=temp_data_dir):
+        with patch('common.data_loader.get_movielens_data_path', return_value=temp_data_dir):
             result = load_item_features()
         assert isinstance(result, pd.DataFrame)
         assert 'item_id' in result.columns

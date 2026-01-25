@@ -195,7 +195,7 @@ python mf_als.py
 
 Or use in code:
 ```python
-from data_loader import load_movielens_100k, get_train_test_split
+from common.data_loader import load_movielens_100k, get_train_test_split
 from mf_als import train_als_model
 
 data = load_movielens_100k()
@@ -228,7 +228,7 @@ python mf_fm.py
 Or use in code:
 ```python
 from mf_fm import train_fm_model
-from data_loader import load_user_features, load_item_features
+from common.data_loader import load_user_features, load_item_features
 
 # Load features
 user_features = load_user_features()
@@ -257,7 +257,7 @@ This implements the exact algorithm from guide lines 370-399 using only NumPy.
 #### Evaluate Models
 
 ```python
-from evaluation import evaluate_model
+from common.evaluation import evaluate_model
 
 predictions = model.test(testset)
 results = evaluate_model(predictions, k=10, threshold=4.0)

@@ -303,6 +303,9 @@ def train_fm_model(trainset, user_features, item_features,
 
 if __name__ == "__main__":
     # Example usage
+    import sys
+    from pathlib import Path
+    sys.path.insert(0, str(Path(__file__).parent.parent))
     from common.data_loader import (load_movielens_100k, get_train_test_split,
                              load_user_features, load_item_features)
     

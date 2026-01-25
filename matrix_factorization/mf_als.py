@@ -191,7 +191,10 @@ def train_als_model(trainset, n_factors=50, reg=0.1, n_iter=50, random_state=42)
 
 if __name__ == "__main__":
     # Example usage
-    from data_loader import load_movielens_100k, get_train_test_split
+    import sys
+    from pathlib import Path
+    sys.path.insert(0, str(Path(__file__).parent.parent))
+    from common.data_loader import load_movielens_100k, get_train_test_split
     
     print("Loading MovieLens 100K dataset...")
     data = load_movielens_100k()

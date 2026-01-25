@@ -15,7 +15,15 @@ Reference: Guide Section 2.3 - Matrix Factorization
 """
 
 import os
+import sys
+from pathlib import Path
 from datetime import datetime
+
+# Add parent directory to path for imports when running as script
+# This allows imports from common/ to work when running this file directly
+parent_path = str(Path(__file__).parent.parent)
+if parent_path not in sys.path:
+    sys.path.insert(0, parent_path)
 
 # Import modules
 from common.data_loader import (load_movielens_100k, get_train_test_split, get_dataset_stats,

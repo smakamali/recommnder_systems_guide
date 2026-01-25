@@ -15,6 +15,15 @@ Loss Function: L = sum((r_ui - p_u^T q_i)^2) + λ(||p_u||^2 + ||q_i||^2)
 """
 
 import numpy as np
+import sys
+from pathlib import Path
+
+# Add parent directory to path for imports when running as script
+# This allows imports from common/ to work when running this file directly
+parent_path = str(Path(__file__).parent.parent)
+if parent_path not in sys.path:
+    sys.path.insert(0, parent_path)
+
 from common.data_loader import load_movielens_100k, get_train_test_split
 
 

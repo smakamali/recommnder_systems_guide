@@ -324,7 +324,7 @@ Use existing matrix factorization implementation from `../matrix_factorization/`
 
 ```python
 from matrix_factorization.mf_als import train_als_model
-from matrix_factorization.data_loader import load_movielens_100k, get_train_test_split
+from common.data_loader import load_movielens_100k, get_train_test_split
 
 # Load data and train CF model
 data = load_movielens_100k()

@@ -12,7 +12,7 @@ from pathlib import Path
 import tempfile
 import shutil
 
-from data_loader import (
+from common.data_loader import (
     load_movielens_100k,
     get_train_test_split,
     load_user_features,
@@ -21,7 +21,7 @@ from data_loader import (
     get_cold_start_split,
 )
 from mf_fm import FactorizationMachineModel, FMRecommender, train_fm_model
-from evaluation import evaluate_model, evaluate_with_cold_start_breakdown
+from common.evaluation import evaluate_model, evaluate_with_cold_start_breakdown
 from recommend import generate_recommendations_with_features
 
 myfm = pytest.importorskip('myfm', reason='myFM library required for integration tests')
