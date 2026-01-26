@@ -215,7 +215,7 @@ class GraphSAGERecommenderWrapper:
 def train_graphsage_recommender(trainset, user_features, item_features,
                                 hidden_dim=64, num_layers=2, dropout=0.1,
                                 aggregator='max', num_epochs=20, batch_size=512,
-                                learning_rate=0.001, num_negatives=1, device='cpu',
+                                learning_rate=0.001, num_negatives=1, device='cuda',
                                 random_seed=42, verbose=True):
     """
     Convenience function to train GraphSAGE recommender.

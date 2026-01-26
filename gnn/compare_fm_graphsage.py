@@ -243,7 +243,7 @@ def main():
         item_features,
         cold_start_users=cold_users,
         cold_start_items=cold_items,
-        graphsage_epochs=20,
+        graphsage_epochs=10,
         fm_epochs=30,
         verbose=True
     )
