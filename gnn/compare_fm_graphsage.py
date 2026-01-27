@@ -7,7 +7,9 @@ Compares performance on warm users, cold start users, and overall metrics.
 
 import sys
 import os
+import json
 from pathlib import Path
+from datetime import datetime
 
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -30,7 +32,9 @@ except ImportError:
 
 def compare_models(trainset, testset, user_features, item_features,
                    cold_start_users=None, cold_start_items=None,
-                   graphsage_epochs=20, fm_epochs=30, verbose=True):
+                   graphsage_epochs=20, fm_epochs=30, verbose=True,
+                   val_ratio=0.1, early_stopping_patience=5, 
+                   early_stopping_min_delta=1e-4):
     """
     Compare FM and GraphSAGE models on the same test set.
     
@@ -44,6 +48,9 @@ def compare_models(trainset, testset, user_features, item_features,
         graphsage_epochs: Number of epochs for GraphSAGE (default: 20)
         fm_epochs: Number of epochs for FM (default: 30)
         verbose: Print progress (default: True)
+        val_ratio: Ratio of training data to use for validation (default: 0.1)
+        early_stopping_patience: Number of epochs to wait without improvement before stopping (default: 5)
+        early_stopping_min_delta: Minimum change in validation loss to qualify as improvement (default: 1e-4)
         
     Returns:
         dict: Comparison results with metrics for both models
@@ -59,10 +66,14 @@ def compare_models(trainset, testset, user_features, item_features,
     graphsage_model = train_graphsage_recommender(
         trainset, user_features, item_features,
         hidden_dim=64,
-        num_layers=2,
+        num_layers=3,
         num_epochs=graphsage_epochs,
         batch_size=512,
         learning_rate=0.001,
+        loss_type='mse',  # NEW: Use MSE loss by default for better rating prediction
+        val_ratio=val_ratio,
+        early_stopping_patience=early_stopping_patience,
+        early_stopping_min_delta=early_stopping_min_delta,
         verbose=verbose
     )
     
@@ -170,33 +181,97 @@ def compare_models(trainset, testset, user_features, item_features,
             print(f"\nCold Start User Metrics:")
             if graphsage_results.get('cold_user_rmse') is not None:
                 print(f"  GraphSAGE:")
-                print(f"    RMSE: {graphsage_results['cold_user_rmse']:.4f}")
-                print(f"    MAE:  {graphsage_results['cold_user_mae']:.4f}")
-                print(f"    Coverage: {graphsage_results['cold_user_coverage']:.2%}")
+                print(f"    Rating Prediction:")
+                print(f"      RMSE: {graphsage_results['cold_user_rmse']:.4f}")
+                print(f"      MAE:  {graphsage_results['cold_user_mae']:.4f}")
+                print(f"      Coverage: {graphsage_results['cold_user_coverage']:.2%}")
+                print(f"    Ranking (K=10):")
+                print(f"      Precision@10: {graphsage_results['cold_user_precision@10']:.4f}")
+                print(f"      Recall@10:    {graphsage_results['cold_user_recall@10']:.4f}")
+                print(f"      NDCG@10:      {graphsage_results['cold_user_ndcg@10']:.4f}")
+                print(f"      Hit Rate@10:  {graphsage_results['cold_user_hit_rate@10']:.4f}")
             
             if results['fm'] is not None and fm_results.get('cold_user_rmse') is not None:
                 print(f"  Factorization Machine:")
-                print(f"    RMSE: {fm_results['cold_user_rmse']:.4f}")
-                print(f"    MAE:  {fm_results['cold_user_mae']:.4f}")
-                print(f"    Coverage: {fm_results['cold_user_coverage']:.2%}")
+                print(f"    Rating Prediction:")
+                print(f"      RMSE: {fm_results['cold_user_rmse']:.4f}")
+                print(f"      MAE:  {fm_results['cold_user_mae']:.4f}")
+                print(f"      Coverage: {fm_results['cold_user_coverage']:.2%}")
+                print(f"    Ranking (K=10):")
+                print(f"      Precision@10: {fm_results['cold_user_precision@10']:.4f}")
+                print(f"      Recall@10:    {fm_results['cold_user_recall@10']:.4f}")
+                print(f"      NDCG@10:      {fm_results['cold_user_ndcg@10']:.4f}")
+                print(f"      Hit Rate@10:  {fm_results['cold_user_hit_rate@10']:.4f}")
         
         if cold_start_items is not None:
             print(f"\nCold Start Item Metrics:")
             if graphsage_results.get('cold_item_rmse') is not None:
                 print(f"  GraphSAGE:")
-                print(f"    RMSE: {graphsage_results['cold_item_rmse']:.4f}")
-                print(f"    MAE:  {graphsage_results['cold_item_mae']:.4f}")
-                print(f"    Coverage: {graphsage_results['cold_item_coverage']:.2%}")
+                print(f"    Rating Prediction:")
+                print(f"      RMSE: {graphsage_results['cold_item_rmse']:.4f}")
+                print(f"      MAE:  {graphsage_results['cold_item_mae']:.4f}")
+                print(f"      Coverage: {graphsage_results['cold_item_coverage']:.2%}")
+                print(f"    Ranking (K=10):")
+                print(f"      Precision@10: {graphsage_results['cold_item_precision@10']:.4f}")
+                print(f"      Recall@10:    {graphsage_results['cold_item_recall@10']:.4f}")
+                print(f"      NDCG@10:      {graphsage_results['cold_item_ndcg@10']:.4f}")
+                print(f"      Hit Rate@10:  {graphsage_results['cold_item_hit_rate@10']:.4f}")
             
             if results['fm'] is not None and fm_results.get('cold_item_rmse') is not None:
                 print(f"  Factorization Machine:")
-                print(f"    RMSE: {fm_results['cold_item_rmse']:.4f}")
-                print(f"    MAE:  {fm_results['cold_item_mae']:.4f}")
-                print(f"    Coverage: {fm_results['cold_item_coverage']:.2%}")
+                print(f"    Rating Prediction:")
+                print(f"      RMSE: {fm_results['cold_item_rmse']:.4f}")
+                print(f"      MAE:  {fm_results['cold_item_mae']:.4f}")
+                print(f"      Coverage: {fm_results['cold_item_coverage']:.2%}")
+                print(f"    Ranking (K=10):")
+                print(f"      Precision@10: {fm_results['cold_item_precision@10']:.4f}")
+                print(f"      Recall@10:    {fm_results['cold_item_recall@10']:.4f}")
+                print(f"      NDCG@10:      {fm_results['cold_item_ndcg@10']:.4f}")
+                print(f"      Hit Rate@10:  {fm_results['cold_item_hit_rate@10']:.4f}")
         
         print("=" * 60)
     
     return results
+
+
+def save_results(results: dict, filepath: str):
+    """
+    Save comparison results to a JSON file.
+    
+    Args:
+        results: Results dictionary from compare_models
+        filepath: Path to save JSON file
+    """
+    # Prepare results for JSON serialization
+    serializable_results = {
+        'timestamp': datetime.now().isoformat(),
+        'models': {}
+    }
+    
+    # Save GraphSAGE results
+    if results.get('graphsage') is not None:
+        graphsage_data = results['graphsage']
+        serializable_results['models']['graphsage'] = {
+            'results': graphsage_data['results'] if graphsage_data.get('results') else None
+        }
+    
+    # Save FM results
+    if results.get('fm') is not None:
+        fm_data = results['fm']
+        serializable_results['models']['fm'] = {
+            'results': fm_data['results'] if fm_data.get('results') else None
+        }
+    else:
+        serializable_results['models']['fm'] = None
+    
+    # Save to file
+    output_path = Path(filepath)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    
+    with open(output_path, 'w') as f:
+        json.dump(serializable_results, f, indent=2)
+    
+    print(f"\nResults saved to: {output_path}")
 
 
 def main():
@@ -243,8 +318,11 @@ def main():
         item_features,
         cold_start_users=cold_users,
         cold_start_items=cold_items,
-        graphsage_epochs=10,
+        graphsage_epochs=150,  # Increased for early stopping
         fm_epochs=30,
+        val_ratio=0.1,
+        early_stopping_patience=15,
+        early_stopping_min_delta=1e-4,
         verbose=True
     )
     
@@ -253,20 +331,31 @@ def main():
         print("\n[Step 5] Cold Start Breakdown Analysis...")
         
         if results['graphsage']:
+            print("\n--- GraphSAGE Cold Start Breakdown ---")
             graphsage_cold = evaluate_with_cold_start_breakdown(
                 results['graphsage']['predictions'],
                 cold_users,
                 cold_items,
+                k=10,
+                threshold=4.0,
                 verbose=True
             )
         
         if results['fm'] is not None:
+            print("\n--- Factorization Machine Cold Start Breakdown ---")
             fm_cold = evaluate_with_cold_start_breakdown(
                 results['fm']['predictions'],
                 cold_users,
                 cold_items,
+                k=10,
+                threshold=4.0,
                 verbose=True
             )
+    
+    # Save results
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    results_file = f"gnn/tuning/comparison_fm_graphsage_{timestamp}.json"
+    save_results(results, results_file)
     
     print("\n" + "=" * 60)
     print("Comparison Completed!")

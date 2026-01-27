@@ -172,3 +172,6 @@ logs/
 # Conda
 *.conda
 *.tar.bz2
+
+# Hyperparameter tuning results
+gnn/tuning/tuning_results_*.json

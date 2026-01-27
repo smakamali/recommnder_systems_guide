@@ -68,6 +68,14 @@ class GraphSAGERecommender(nn.Module):
                     SAGEConv(hidden_dim, hidden_dim, aggr=aggregator)
                 )
         
+        # Rating prediction head: maps dot product to rating scale [1, 5]
+        self.rating_head = nn.Sequential(
+            nn.Linear(1, 16),
+            nn.ReLU(),
+            nn.Dropout(0.1),
+            nn.Linear(16, 1)
+        )
+        
         # Initialize weights
         self._reset_parameters()
     
@@ -133,7 +141,7 @@ class GraphSAGERecommender(nn.Module):
         
         return user_emb, item_emb
     
-    def predict(self, user_emb, item_emb, user_idx, item_idx):
+    def predict(self, user_emb, item_emb, user_idx, item_idx, use_rating_head=True):
         """
         Predict rating for user-item pair.
         
@@ -142,6 +150,7 @@ class GraphSAGERecommender(nn.Module):
             item_emb: Item embeddings (num_items, hidden_dim)
             user_idx: User index (scalar or tensor)
             item_idx: Item index (scalar or tensor)
+            use_rating_head: Whether to use rating prediction head (default: True)
             
         Returns:
             torch.Tensor: Predicted rating scores
@@ -157,8 +166,16 @@ class GraphSAGERecommender(nn.Module):
         else:
             item_emb_selected = item_emb[item_idx]
         
-        # Dot product for prediction
-        scores = (user_emb_selected * item_emb_selected).sum(dim=1)
+        # Dot product for score
+        scores = (user_emb_selected * item_emb_selected).sum(dim=1, keepdim=True)
+        
+        if use_rating_head and hasattr(self, 'rating_head'):
+            # Use learned mapping to [1, 5]
+            scores = self.rating_head(scores).squeeze(-1)
+            scores = torch.clamp(scores, 1.0, 5.0)
+        else:
+            # Fallback: simple clipping (for BPR-only mode)
+            scores = scores.squeeze(-1)
         
         return scores
 

@@ -552,9 +552,8 @@ class FeaturePreprocessor:
         f.write(' '.join(line_parts) + '\n')
 
 
-def get_cold_start_split(data, user_features, item_features, 
-                         cold_start_ratio=0.1, test_size=0.2, random_state=42,
-                         cold_user_threshold=5, cold_item_threshold=10):
+def get_cold_start_split(data, test_size=0.2, random_state=42,
+                         cold_user_threshold=17, cold_item_threshold=10):
     """
     Create train/test split with explicit cold start subset.
     
@@ -615,6 +614,105 @@ def get_cold_start_split(data, user_features, item_features,
     return trainset, testset, cold_start_users, cold_start_items
 
 
+def find_cold_start_threshold(data, user_features, item_features, 
+                              target_count=500, test_size=0.2, random_state=42,
+                              max_threshold=200, verbose=True):
+    """
+    Find the cold_user_threshold that yields approximately target_count cold start users.
+    
+    Args:
+        data: Surprise Dataset object
+        user_features: DataFrame with user features
+        item_features: DataFrame with item features
+        target_count (int): Target number of cold start users (default: 500)
+        test_size (float): Fraction of data for testing (default: 0.2)
+        random_state (int): Random seed for reproducibility (default: 42)
+        max_threshold (int): Maximum threshold to test (default: 200)
+        verbose (bool): Print detailed analysis (default: True)
+        
+    Returns:
+        int: Recommended cold_user_threshold value
+    """
+    # Standard train/test split
+    trainset, testset = train_test_split(
+        data, 
+        test_size=test_size, 
+        random_state=random_state
+    )
+    
+    # Count ratings per user in training set
+    user_rating_counts = defaultdict(int)
+    for inner_uid, inner_iid, _ in trainset.all_ratings():
+        uid = trainset.to_raw_uid(inner_uid)
+        user_rating_counts[uid] += 1
+    
+    # Get test set users
+    all_test_users = set(uid for uid, _, _ in testset)
+    
+    # Test different thresholds
+    if verbose:
+        print("=" * 60)
+        print("Finding Cold Start User Threshold")
+        print("=" * 60)
+        print(f"Target cold start users: {target_count}")
+        print(f"Total users in training: {len(user_rating_counts)}")
+        print(f"Total users in test: {len(all_test_users)}")
+        print("\nTesting thresholds...")
+        print("-" * 60)
+    
+    best_threshold = None
+    best_count = None
+    min_diff = float('inf')
+    
+    # Test thresholds from 1 to max_threshold
+    results = []
+    for threshold in range(1, max_threshold + 1):
+        # Count users with < threshold ratings in training
+        cold_candidates = {uid for uid, count in user_rating_counts.items() 
+                          if count < threshold}
+        # Intersect with test set users
+        cold_start_users = cold_candidates & all_test_users
+        count = len(cold_start_users)
+        
+        diff = abs(count - target_count)
+        if diff < min_diff:
+            min_diff = diff
+            best_threshold = threshold
+            best_count = count
+        
+        # Store results for every 5th threshold or near target
+        if threshold % 5 == 0 or abs(count - target_count) < 50:
+            results.append((threshold, count))
+    
+    if verbose:
+        print(f"\nThreshold | Cold Start Users")
+        print("-" * 30)
+        for threshold, count in results[:20]:  # Show first 20 results
+            marker = " <-- CLOSEST" if threshold == best_threshold else ""
+            print(f"   {threshold:3d}   |      {count:4d}{marker}")
+        if len(results) > 20:
+            print(f"   ...")
+            print(f"   {best_threshold:3d}   |      {best_count:4d} <-- BEST")
+        
+        print("\n" + "=" * 60)
+        print(f"Recommended threshold: {best_threshold}")
+        print(f"  -> Yields {best_count} cold start users")
+        print(f"  -> Difference from target: {abs(best_count - target_count)} users")
+        print("=" * 60)
+        
+        # Show distribution statistics
+        rating_counts_list = list(user_rating_counts.values())
+        print(f"\nRating Distribution Statistics:")
+        print(f"  Min ratings per user: {min(rating_counts_list)}")
+        print(f"  Max ratings per user: {max(rating_counts_list)}")
+        print(f"  Mean ratings per user: {np.mean(rating_counts_list):.2f}")
+        print(f"  Median ratings per user: {np.median(rating_counts_list):.2f}")
+        print(f"  25th percentile: {np.percentile(rating_counts_list, 25):.2f}")
+        print(f"  75th percentile: {np.percentile(rating_counts_list, 75):.2f}")
+    
+    return best_threshold
+
+
 if __name__ == "__main__":
     # Example usage
     print("Loading MovieLens 100K dataset...")
@@ -649,8 +747,6 @@ if __name__ == "__main__":
     
     # Test cold start split
     print("\nTesting cold start split...")
-    trainset_cs, testset_cs, cold_users, cold_items = get_cold_start_split(
-        data, user_features, item_features
-    )
+    trainset_cs, testset_cs, cold_users, cold_items = get_cold_start_split(data)
     print(f"Cold start users: {len(cold_users)}")
     print(f"Cold start items: {len(cold_items)}")

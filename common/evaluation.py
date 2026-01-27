@@ -285,17 +285,19 @@ def hit_rate_at_k(predictions, k=10, threshold=4.0):
     return hits / total_users if total_users > 0 else 0.0
 
 
-def evaluate_cold_start_users(predictions, cold_start_user_ids, verbose=True):
+def evaluate_cold_start_users(predictions, cold_start_user_ids, k=10, threshold=4.0, verbose=True):
     """
     Evaluate model performance on cold start users.
     
     Args:
         predictions: List of prediction tuples (uid, iid, true_r, est_r, ...)
         cold_start_user_ids: Set of user IDs not in training
+        k (int): K value for ranking metrics (default: 10)
+        threshold (float): Relevance threshold (default: 4.0)
         verbose: Print detailed results (default: True)
         
     Returns:
-        dict with cold_start_rmse, cold_start_mae, cold_start_coverage
+        dict with cold_start_rmse, cold_start_mae, cold_start_coverage and ranking metrics
     """
     cold_predictions = []
     
@@ -312,11 +314,21 @@ def evaluate_cold_start_users(predictions, cold_start_user_ids, verbose=True):
             'cold_user_rmse': None,
             'cold_user_mae': None,
             'cold_user_coverage': 0.0,
-            'cold_user_count': 0
+            'cold_user_count': 0,
+            f'cold_user_precision@{k}': None,
+            f'cold_user_recall@{k}': None,
+            f'cold_user_ndcg@{k}': None,
+            f'cold_user_hit_rate@{k}': None
         }
     
     rmse = calculate_rmse(cold_predictions)
     mae = calculate_mae(cold_predictions)
+    
+    # Calculate ranking metrics for cold start users
+    prec = precision_at_k(cold_predictions, k=k, threshold=threshold)
+    rec = recall_at_k(cold_predictions, k=k, threshold=threshold)
+    ndcg = ndcg_at_k(cold_predictions, k=k, threshold=threshold)
+    hit_rate = hit_rate_at_k(cold_predictions, k=k, threshold=threshold)
     
     # Coverage: percentage of cold start users that have at least one prediction
     unique_cold_users_with_predictions = set(pred[0] for pred in cold_predictions if len(pred) >= 4)
@@ -330,29 +342,41 @@ def evaluate_cold_start_users(predictions, cold_start_user_ids, verbose=True):
         print(f"Cold start users with predictions: {len(unique_cold_users_with_predictions)}")
         print(f"Total predictions: {len(cold_predictions)}")
         print(f"Coverage: {coverage:.2%}")
-        print(f"RMSE: {rmse:.4f}")
-        print(f"MAE:  {mae:.4f}")
+        print(f"\nRating Prediction Metrics:")
+        print(f"  RMSE: {rmse:.4f}")
+        print(f"  MAE:  {mae:.4f}")
+        print(f"\nRanking Metrics (K={k}):")
+        print(f"  Precision@{k}: {prec:.4f}")
+        print(f"  Recall@{k}:    {rec:.4f}")
+        print(f"  NDCG@{k}:      {ndcg:.4f}")
+        print(f"  Hit Rate@{k}:  {hit_rate:.4f}")
         print("=" * 60)
     
     return {
         'cold_user_rmse': rmse,
         'cold_user_mae': mae,
         'cold_user_coverage': coverage,
-        'cold_user_count': len(cold_predictions)
+        'cold_user_count': len(cold_predictions),
+        f'cold_user_precision@{k}': prec,
+        f'cold_user_recall@{k}': rec,
+        f'cold_user_ndcg@{k}': ndcg,
+        f'cold_user_hit_rate@{k}': hit_rate
     }
 
 
-def evaluate_cold_start_items(predictions, cold_start_item_ids, verbose=True):
+def evaluate_cold_start_items(predictions, cold_start_item_ids, k=10, threshold=4.0, verbose=True):
     """
     Evaluate model performance on cold start items.
     
     Args:
         predictions: List of prediction tuples
         cold_start_item_ids: Set of item IDs with few ratings in training
+        k (int): K value for ranking metrics (default: 10)
+        threshold (float): Relevance threshold (default: 4.0)
         verbose: Print detailed results (default: True)
         
     Returns:
-        dict with metrics specific to new items
+        dict with metrics specific to new items including ranking metrics
     """
     cold_predictions = []
     
@@ -369,11 +393,21 @@ def evaluate_cold_start_items(predictions, cold_start_item_ids, verbose=True):
             'cold_item_rmse': None,
             'cold_item_mae': None,
             'cold_item_coverage': 0.0,
-            'cold_item_count': 0
+            'cold_item_count': 0,
+            f'cold_item_precision@{k}': None,
+            f'cold_item_recall@{k}': None,
+            f'cold_item_ndcg@{k}': None,
+            f'cold_item_hit_rate@{k}': None
         }
     
     rmse = calculate_rmse(cold_predictions)
     mae = calculate_mae(cold_predictions)
+    
+    # Calculate ranking metrics for cold start items
+    prec = precision_at_k(cold_predictions, k=k, threshold=threshold)
+    rec = recall_at_k(cold_predictions, k=k, threshold=threshold)
+    ndcg = ndcg_at_k(cold_predictions, k=k, threshold=threshold)
+    hit_rate = hit_rate_at_k(cold_predictions, k=k, threshold=threshold)
     
     # Coverage: percentage of cold start items that have at least one prediction
     unique_cold_items_with_predictions = set(pred[1] for pred in cold_predictions if len(pred) >= 4)
@@ -387,20 +421,30 @@ def evaluate_cold_start_items(predictions, cold_start_item_ids, verbose=True):
         print(f"Cold start items with predictions: {len(unique_cold_items_with_predictions)}")
         print(f"Total predictions: {len(cold_predictions)}")
         print(f"Coverage: {coverage:.2%}")
-        print(f"RMSE: {rmse:.4f}")
-        print(f"MAE:  {mae:.4f}")
+        print(f"\nRating Prediction Metrics:")
+        print(f"  RMSE: {rmse:.4f}")
+        print(f"  MAE:  {mae:.4f}")
+        print(f"\nRanking Metrics (K={k}):")
+        print(f"  Precision@{k}: {prec:.4f}")
+        print(f"  Recall@{k}:    {rec:.4f}")
+        print(f"  NDCG@{k}:      {ndcg:.4f}")
+        print(f"  Hit Rate@{k}:  {hit_rate:.4f}")
         print("=" * 60)
     
     return {
         'cold_item_rmse': rmse,
         'cold_item_mae': mae,
         'cold_item_coverage': coverage,
-        'cold_item_count': len(cold_predictions)
+        'cold_item_count': len(cold_predictions),
+        f'cold_item_precision@{k}': prec,
+        f'cold_item_recall@{k}': rec,
+        f'cold_item_ndcg@{k}': ndcg,
+        f'cold_item_hit_rate@{k}': hit_rate
     }
 
 
 def evaluate_with_cold_start_breakdown(predictions, cold_start_users, 
-                                      cold_start_items, verbose=True):
+                                      cold_start_items, k=10, threshold=4.0, verbose=True):
     """
     Comprehensive evaluation with 4 scenarios:
     1. Warm-warm (known user, known item)
@@ -412,10 +456,12 @@ def evaluate_with_cold_start_breakdown(predictions, cold_start_users,
         predictions: List of prediction tuples
         cold_start_users: Set of cold start user IDs
         cold_start_items: Set of cold start item IDs
+        k (int): K value for ranking metrics (default: 10)
+        threshold (float): Relevance threshold (default: 4.0)
         verbose: Print detailed results (default: True)
         
     Returns:
-        dict with metrics for each scenario
+        dict with metrics for each scenario including ranking metrics
     """
     warm_warm = []
     cold_user = []
@@ -441,47 +487,33 @@ def evaluate_with_cold_start_breakdown(predictions, cold_start_users,
     
     results = {}
     
-    # Warm-warm
-    if warm_warm:
-        results['warm_warm'] = {
-            'rmse': calculate_rmse(warm_warm),
-            'mae': calculate_mae(warm_warm),
-            'count': len(warm_warm)
-        }
-    else:
-        results['warm_warm'] = {'rmse': None, 'mae': None, 'count': 0}
+    # Helper function to calculate all metrics for a scenario
+    def calculate_scenario_metrics(preds, scenario_name):
+        if preds:
+            metrics = {
+                'rmse': calculate_rmse(preds),
+                'mae': calculate_mae(preds),
+                'count': len(preds),
+                f'precision@{k}': precision_at_k(preds, k=k, threshold=threshold),
+                f'recall@{k}': recall_at_k(preds, k=k, threshold=threshold),
+                f'ndcg@{k}': ndcg_at_k(preds, k=k, threshold=threshold),
+                f'hit_rate@{k}': hit_rate_at_k(preds, k=k, threshold=threshold)
+            }
+        else:
+            metrics = {
+                'rmse': None, 'mae': None, 'count': 0,
+                f'precision@{k}': None, f'recall@{k}': None,
+                f'ndcg@{k}': None, f'hit_rate@{k}': None
+            }
+        return metrics
     
-    # Cold user
-    if cold_user:
-        results['cold_user'] = {
-            'rmse': calculate_rmse(cold_user),
-            'mae': calculate_mae(cold_user),
-            'count': len(cold_user)
-        }
-    else:
-        results['cold_user'] = {'rmse': None, 'mae': None, 'count': 0}
+    # Calculate metrics for each scenario
+    results['warm_warm'] = calculate_scenario_metrics(warm_warm, 'warm_warm')
+    results['cold_user'] = calculate_scenario_metrics(cold_user, 'cold_user')
+    results['cold_item'] = calculate_scenario_metrics(cold_item, 'cold_item')
+    results['cold_cold'] = calculate_scenario_metrics(cold_cold, 'cold_cold')
     
-    # Cold item
-    if cold_item:
-        results['cold_item'] = {
-            'rmse': calculate_rmse(cold_item),
-            'mae': calculate_mae(cold_item),
-            'count': len(cold_item)
-        }
-    else:
-        results['cold_item'] = {'rmse': None, 'mae': None, 'count': 0}
-    
-    # Cold-cold
-    if cold_cold:
-        results['cold_cold'] = {
-            'rmse': calculate_rmse(cold_cold),
-            'mae': calculate_mae(cold_cold),
-            'count': len(cold_cold)
-        }
-    else:
-        results['cold_cold'] = {'rmse': None, 'mae': None, 'count': 0}
-    
-    # Overall cold start metrics
+    # Overall cold start metrics (for backward compatibility)
     results['cold_user_rmse'] = results['cold_user']['rmse']
     results['cold_item_rmse'] = results['cold_item']['rmse']
     results['cold_cold_rmse'] = results['cold_cold']['rmse']
@@ -490,29 +522,25 @@ def evaluate_with_cold_start_breakdown(predictions, cold_start_users,
         print("\n" + "=" * 60)
         print("Cold Start Breakdown Evaluation")
         print("=" * 60)
-        print(f"\nWarm-Warm (known user, known item):")
-        print(f"  Count: {results['warm_warm']['count']}")
-        if results['warm_warm']['rmse'] is not None:
-            print(f"  RMSE: {results['warm_warm']['rmse']:.4f}")
-            print(f"  MAE:  {results['warm_warm']['mae']:.4f}")
         
-        print(f"\nCold User (new user, known item):")
-        print(f"  Count: {results['cold_user']['count']}")
-        if results['cold_user']['rmse'] is not None:
-            print(f"  RMSE: {results['cold_user']['rmse']:.4f}")
-            print(f"  MAE:  {results['cold_user']['mae']:.4f}")
+        # Helper function to print scenario metrics
+        def print_scenario(name, metrics):
+            print(f"\n{name}:")
+            print(f"  Count: {metrics['count']}")
+            if metrics['rmse'] is not None:
+                print(f"  Rating Prediction:")
+                print(f"    RMSE: {metrics['rmse']:.4f}")
+                print(f"    MAE:  {metrics['mae']:.4f}")
+                print(f"  Ranking Metrics (K={k}):")
+                print(f"    Precision@{k}: {metrics[f'precision@{k}']:.4f}")
+                print(f"    Recall@{k}:    {metrics[f'recall@{k}']:.4f}")
+                print(f"    NDCG@{k}:      {metrics[f'ndcg@{k}']:.4f}")
+                print(f"    Hit Rate@{k}:  {metrics[f'hit_rate@{k}']:.4f}")
         
-        print(f"\nCold Item (known user, new item):")
-        print(f"  Count: {results['cold_item']['count']}")
-        if results['cold_item']['rmse'] is not None:
-            print(f"  RMSE: {results['cold_item']['rmse']:.4f}")
-            print(f"  MAE:  {results['cold_item']['mae']:.4f}")
-        
-        print(f"\nCold-Cold (new user, new item):")
-        print(f"  Count: {results['cold_cold']['count']}")
-        if results['cold_cold']['rmse'] is not None:
-            print(f"  RMSE: {results['cold_cold']['rmse']:.4f}")
-            print(f"  MAE:  {results['cold_cold']['mae']:.4f}")
+        print_scenario("Warm-Warm (known user, known item)", results['warm_warm'])
+        print_scenario("Cold User (new user, known item)", results['cold_user'])
+        print_scenario("Cold Item (known user, new item)", results['cold_item'])
+        print_scenario("Cold-Cold (new user, new item)", results['cold_cold'])
         print("=" * 60)
     
     return results
@@ -598,13 +626,13 @@ def evaluate_model(predictions, k=10, threshold=4.0, verbose=True,
     # Add cold start metrics if provided
     if cold_start_users is not None:
         cold_user_results = evaluate_cold_start_users(
-            predictions, cold_start_users, verbose=False
+            predictions, cold_start_users, k=k, threshold=threshold, verbose=False
         )
         results.update(cold_user_results)
     
     if cold_start_items is not None:
         cold_item_results = evaluate_cold_start_items(
-            predictions, cold_start_items, verbose=False
+            predictions, cold_start_items, k=k, threshold=threshold, verbose=False
         )
         results.update(cold_item_results)
     
@@ -624,15 +652,27 @@ def evaluate_model(predictions, k=10, threshold=4.0, verbose=True,
         
         if cold_start_users is not None and results.get('cold_user_rmse') is not None:
             print(f"\nCold Start User Metrics:")
-            print(f"  RMSE: {results['cold_user_rmse']:.4f}")
-            print(f"  MAE:  {results['cold_user_mae']:.4f}")
-            print(f"  Coverage: {results['cold_user_coverage']:.2%}")
+            print(f"  Rating Prediction:")
+            print(f"    RMSE: {results['cold_user_rmse']:.4f}")
+            print(f"    MAE:  {results['cold_user_mae']:.4f}")
+            print(f"    Coverage: {results['cold_user_coverage']:.2%}")
+            print(f"  Ranking (K={k}):")
+            print(f"    Precision@{k}: {results[f'cold_user_precision@{k}']:.4f}")
+            print(f"    Recall@{k}:    {results[f'cold_user_recall@{k}']:.4f}")
+            print(f"    NDCG@{k}:      {results[f'cold_user_ndcg@{k}']:.4f}")
+            print(f"    Hit Rate@{k}:  {results[f'cold_user_hit_rate@{k}']:.4f}")
         
         if cold_start_items is not None and results.get('cold_item_rmse') is not None:
             print(f"\nCold Start Item Metrics:")
-            print(f"  RMSE: {results['cold_item_rmse']:.4f}")
-            print(f"  MAE:  {results['cold_item_mae']:.4f}")
-            print(f"  Coverage: {results['cold_item_coverage']:.2%}")
+            print(f"  Rating Prediction:")
+            print(f"    RMSE: {results['cold_item_rmse']:.4f}")
+            print(f"    MAE:  {results['cold_item_mae']:.4f}")
+            print(f"    Coverage: {results['cold_item_coverage']:.2%}")
+            print(f"  Ranking (K={k}):")
+            print(f"    Precision@{k}: {results[f'cold_item_precision@{k}']:.4f}")
+            print(f"    Recall@{k}:    {results[f'cold_item_recall@{k}']:.4f}")
+            print(f"    NDCG@{k}:      {results[f'cold_item_ndcg@{k}']:.4f}")
+            print(f"    Hit Rate@{k}:  {results[f'cold_item_hit_rate@{k}']:.4f}")
         
         print("=" * 60)
     

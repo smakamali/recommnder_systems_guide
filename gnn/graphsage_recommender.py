@@ -37,7 +37,8 @@ class GraphSAGERecommenderWrapper:
     def __init__(self, hidden_dim=64, num_layers=2, dropout=0.1,
                  aggregator='max', num_epochs=20, batch_size=512,
                  learning_rate=0.001, num_negatives=1, device='cpu',
-                 random_seed=42):
+                 random_seed=42, loss_type='mse', mse_weight=1.0, bpr_weight=0.1,
+                 val_ratio=0.1, early_stopping_patience=5, early_stopping_min_delta=1e-4):
         """
         Initialize GraphSAGE recommender.
         
@@ -49,9 +50,15 @@ class GraphSAGERecommenderWrapper:
             num_epochs: Number of training epochs (default: 20)
             batch_size: Batch size for training (default: 512)
             learning_rate: Learning rate (default: 0.001)
-            num_negatives: Number of negative samples per positive (default: 1)
+            num_negatives: Number of negative samples per positive (default: 1, used for BPR/combined)
             device: Device to train on (default: 'cpu')
             random_seed: Random seed for reproducibility (default: 42)
+            loss_type: Loss function - 'mse', 'bpr', or 'combined' (default: 'mse')
+            mse_weight: Weight for MSE component in combined loss (default: 1.0)
+            bpr_weight: Weight for BPR component in combined loss (default: 0.1)
+            val_ratio: Ratio of training data to use for validation (default: 0.1)
+            early_stopping_patience: Number of epochs to wait without improvement before stopping (default: 5)
+            early_stopping_min_delta: Minimum change in validation loss to qualify as improvement (default: 1e-4)
         """
         self.hidden_dim = hidden_dim
         self.num_layers = num_layers
@@ -63,6 +70,12 @@ class GraphSAGERecommenderWrapper:
         self.num_negatives = num_negatives
         self.device = device
         self.random_seed = random_seed
+        self.loss_type = loss_type
+        self.mse_weight = mse_weight
+        self.bpr_weight = bpr_weight
+        self.val_ratio = val_ratio
+        self.early_stopping_patience = early_stopping_patience
+        self.early_stopping_min_delta = early_stopping_min_delta
         
         # Set random seed
         torch.manual_seed(random_seed)
@@ -137,7 +150,13 @@ class GraphSAGERecommenderWrapper:
             learning_rate=self.learning_rate,
             num_negatives=self.num_negatives,
             device=self.device,
-            verbose=verbose
+            verbose=verbose,
+            loss_type=self.loss_type,
+            mse_weight=self.mse_weight,
+            bpr_weight=self.bpr_weight,
+            val_ratio=self.val_ratio,
+            early_stopping_patience=self.early_stopping_patience,
+            early_stopping_min_delta=self.early_stopping_min_delta
         )
         
         # Get final embeddings for inference
@@ -171,16 +190,18 @@ class GraphSAGERecommenderWrapper:
             # For now, return neutral rating
             return 3.0
         
-        # Get embeddings
-        user_emb = self.user_embeddings[user_idx:user_idx+1]
-        item_emb = self.item_embeddings[item_idx:item_idx+1]
+        # Compute prediction with rating head
+        with torch.no_grad():
+            score = self.model.predict(
+                self.user_embeddings, 
+                self.item_embeddings,
+                user_idx, 
+                item_idx,
+                use_rating_head=True
+            ).item()
         
-        # Compute dot product
-        score = (user_emb * item_emb).sum(dim=1).item()
-        
-        # Clip to valid rating range [1, 5]
+        # Already clamped in model, but ensure valid range
         score = max(1.0, min(5.0, score))
-        
         return float(score)
     
     def test(self, testset):
@@ -216,7 +237,10 @@ def train_graphsage_recommender(trainset, user_features, item_features,
                                 hidden_dim=64, num_layers=2, dropout=0.1,
                                 aggregator='max', num_epochs=20, batch_size=512,
                                 learning_rate=0.001, num_negatives=1, device='cuda',
-                                random_seed=42, verbose=True):
+                                random_seed=42, verbose=True, loss_type='mse',
+                                mse_weight=1.0, bpr_weight=0.1,
+                                val_ratio=0.1, early_stopping_patience=5, 
+                                early_stopping_min_delta=1e-4):
     """
     Convenience function to train GraphSAGE recommender.
     
@@ -229,14 +253,20 @@ def train_graphsage_recommender(trainset, user_features, item_features,
         hidden_dim: Hidden dimension (default: 64)
         num_layers: Number of layers (default: 2)
         dropout: Dropout rate (default: 0.1)
-        aggregator: Aggregator type (default: 'pool')
+        aggregator: Aggregator type (default: 'max')
         num_epochs: Training epochs (default: 20)
         batch_size: Batch size (default: 512)
         learning_rate: Learning rate (default: 0.001)
-        num_negatives: Negative samples (default: 1)
-        device: Device (default: 'cpu')
+        num_negatives: Negative samples (default: 1, used for BPR/combined)
+        device: Device (default: 'cuda')
         random_seed: Random seed (default: 42)
         verbose: Print progress (default: True)
+        loss_type: Loss function - 'mse', 'bpr', or 'combined' (default: 'mse')
+        mse_weight: Weight for MSE component in combined loss (default: 1.0)
+        bpr_weight: Weight for BPR component in combined loss (default: 0.1)
+        val_ratio: Ratio of training data to use for validation (default: 0.1)
+        early_stopping_patience: Number of epochs to wait without improvement before stopping (default: 5)
+        early_stopping_min_delta: Minimum change in validation loss to qualify as improvement (default: 1e-4)
         
     Returns:
         GraphSAGERecommenderWrapper: Trained recommender
@@ -251,7 +281,13 @@ def train_graphsage_recommender(trainset, user_features, item_features,
         learning_rate=learning_rate,
         num_negatives=num_negatives,
         device=device,
-        random_seed=random_seed
+        random_seed=random_seed,
+        loss_type=loss_type,
+        mse_weight=mse_weight,
+        bpr_weight=bpr_weight,
+        val_ratio=val_ratio,
+        early_stopping_patience=early_stopping_patience,
+        early_stopping_min_delta=early_stopping_min_delta
     )
     
     recommender.fit(trainset, user_features, item_features, verbose=verbose)
@@ -260,13 +296,13 @@ def train_graphsage_recommender(trainset, user_features, item_features,
 
 
 if __name__ == "__main__":
-    # Example usage
+    # Example usage (run from repo root: python gnn/graphsage_recommender.py or python -m gnn.graphsage_recommender)
     import sys
     from pathlib import Path
     sys.path.insert(0, str(Path(__file__).parent.parent))
-    from graph_data_loader import build_bipartite_graph
-    from graphsage_model import GraphSAGERecommender
-    from train_graphsage import train_graphsage_model
+    from gnn.graph_data_loader import build_bipartite_graph
+    from gnn.graphsage_model import GraphSAGERecommender
+    from gnn.train_graphsage import train_graphsage_model
     from common.data_loader import (load_movielens_100k, get_train_test_split,
                                     load_user_features, load_item_features)
     from common.evaluation import evaluate_model
